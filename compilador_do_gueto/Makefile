@@ -1,8 +1,11 @@
-all: saida entrada.txt
-	./saida < entrada.txt
+all: gueto simples.gueto
+	./gueto < simples.gueto
 
-lex.yy.c: lexico.l
-	lex lexico.l
+lex.yy.c: gueto.lex
+	lex gueto.lex
 
-saida: lex.yy.c
-	g++ lex.yy.c -o saida -lfl
+y.tab.c: gueto.y
+	yacc gueto.y
+
+gueto: lex.yy.c y.tab.c
+	g++ -o gueto y.tab.c -lfl

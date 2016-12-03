@@ -1,0 +1,13 @@
+Program HelloWorld;
+
+Var
+  x, a, b : Integer;  
+  c, d : Boolean; 
+
+coe
+  revela( 'hello, world' );
+  a = 9;
+  b = 10;
+  x = 3 * a + b;
+  revela( x + 1 );
+flwvlw.
