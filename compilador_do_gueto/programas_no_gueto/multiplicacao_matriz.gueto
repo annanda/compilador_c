@@ -1,0 +1,62 @@
+taipe intero[10, 10] vetor_10_por_10;
+
+vetor_10_por_10 zeros() {
+  flwvlw {
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,0,0,0,0}
+        };
+}
+
+/*função que define a multiplicação de matrizes A e B e retorna na matriz retorna*/
+nada multiplica_matriz(vetor_10_por_10 retorna, vetor_10_por_10 A, vetor_10_por_10 B){
+  vetor_10_por_10 K = zeros();
+  intero soma = 0;
+  pra (intero i = 0; i < 10; i++){
+    pra (intero j = 0; j < 10; j++){
+      pra (intero k = 0; k < 10; k++){
+        soma += A[i, k]*B[k, j];
+      }
+      K[i, j] = soma;
+      soma = 0;
+    }
+  }
+  retorna = K;
+}
+
+nada revela_matriz(vetor_10_por_10 X){
+  pra (intero i = 0; i < 10; i++){
+    pra (intero j = 0; j < 10; j++){
+      revela("\t" + X[i][j]);
+    }
+    revela("\n");
+  }
+}
+
+main {
+  vetor_10_por_10 A = {
+          {1,2,3,4,5,6,7,8,9,0},
+          {5,7,8,9,1,1,1,2,3,4},
+          {1,2,3,4,5,6,7,8,9,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {1,2,3,4,5,6,7,8,9,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {1,2,3,4,5,6,7,8,9,0},
+          {2,3,4,5,0,1,1,0,1,0},
+          {1,2,3,4,5,6,7,8,9,0},
+          {0,0,0,0,0,0,0,0,0,0},
+          {1,2,3,4,5,6,7,8,9,0}
+    };
+    vetor_10_por_10 Rt;
+    multiplica_matriz(Rt, A, A);
+    revela_matriz(Rt);
+    flwvlw;
+}
