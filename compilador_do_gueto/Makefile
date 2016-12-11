@@ -1,6 +1,6 @@
 all: gueto simples.gueto
-	./gueto < simples.gueto
-
+	./gueto < simples.gueto > gerado.cc
+	
 lex.yy.c: gueto.lex
 	lex gueto.lex
 
