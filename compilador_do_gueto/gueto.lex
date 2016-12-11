@@ -17,6 +17,7 @@ COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 
 "{"        { return TK_BEGIN;  }
 "}"        { return TK_END;    }
+"main"     { return TK_MAIN;   }
 "flwvlw"   { return TK_RETURN; }
 "revela"   { return TK_WRITE;  }
 "descobre" { return TK_READ;   }

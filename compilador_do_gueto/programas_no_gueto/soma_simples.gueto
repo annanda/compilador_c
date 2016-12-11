@@ -1,10 +1,12 @@
 main {
   intero a, b, soma;
-  
+
   a = 10;
   b = 3;
 
   soma = a + b;
+
+  revela(soma);
 
   flwvlw;
 }

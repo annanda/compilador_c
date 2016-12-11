@@ -67,7 +67,7 @@ string includes =
 
 %}
 
-%token TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE TK_RETURN TK_ATRIB
+%token TK_MAIN TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE TK_RETURN TK_ATRIB
 %token TK_WRITE TK_READ
 %token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_E TK_AND TK_OR
 %token TK_FOR TK_WHILE TK_DO
@@ -79,28 +79,10 @@ string includes =
 
 %%
 
-S : DECLS MAIN
+S : MAIN
   ;
 
-DECLS : DECL DECLS
-      |
-      ;
-
-DECL : TK_VAR VARS
-     ;
-
-VARS : VAR ';' VARS
-     |
-     ;
-
-VAR : IDS ':' TK_ID
-    ;
-
-IDS : TK_ID ',' IDS
-    | TK_ID
-    ;
-
-MAIN : BLOCO '.'
+MAIN : TK_ID BLOCO
      ;
 
 BLOCO : TK_BEGIN CMDS TK_END
@@ -110,11 +92,12 @@ CMDS : CMD CMDS
      |
      ;
 
-CMD : WRITELN
+CMD : WRITE
     | ATRIB
+    |
     ;
 
-WRITELN : TK_WRITELN '(' E ')' ';'
+WRITELN : TK_WRITE '(' E ')' ';'
         ;
 
 ATRIB : TK_ID TK_ATRIB E ';'
@@ -124,17 +107,7 @@ E : E '+' E
   | E '-' E
   | E '*' E
   | E '/' E
-  | E TK_G E
-  | E TK_L E
-  | E TK_LE E
-  | E TK_GE E
-  | E TK_ATRIB E
-  | E TK_E E
-  | E TK_DIFF E
-  | E TK_AND E
-  | E TK_OR E
   | '(' E ')'
-  | TK_NOT E
   | F
   ;
 
