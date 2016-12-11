@@ -1,11 +1,11 @@
 DELIM   [\t ]
 LINHA   [\n]
 NUMERO  [0-9]
-LETRA   [A-Za-z_]
+LETRA   [a-zA-Z_]
 INT     {NUMERO}+
 DOUBLE  {NUMERO}+("."{NUMERO}+)?
 ID      {LETRA}({LETRA}|{NUMERO})*
-CSTRING "'"([^\n']|"''")*"'"
+CSTRING \"(\\.|[^\\"])*\"
 COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 
 %%

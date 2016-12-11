@@ -7,6 +7,7 @@
 #include <vector>
 
 using namespace std;
+
 #define MAX_DIM 2
 
 int yylex();
@@ -36,7 +37,7 @@ struct Tipo {
     this->tam[0] = i;
     this->tam[1] = j;
   }
-}
+};
 
 struct Atributos {
   string valor, codigo;
@@ -67,9 +68,9 @@ string includes =
 
 %}
 
-%token TK_MAIN TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE TK_RETURN TK_ATRIB
+%token TK_MAIN TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE TK_CSTRING TK_RETURN TK_ATRIB
 %token TK_WRITE TK_READ
-%token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_E TK_AND TK_OR
+%token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_E TK_AND TK_OR TK_NOT
 %token TK_FOR TK_WHILE TK_DO
 
 %left TK_AND TK_OR
@@ -81,8 +82,8 @@ string includes =
 
 S : MAIN
   ;
-
-MAIN : TK_ID BLOCO
+  
+MAIN : TK_MAIN BLOCO
      ;
 
 BLOCO : TK_BEGIN CMDS TK_END
@@ -94,14 +95,26 @@ CMDS : CMD CMDS
 
 CMD : WRITE
     | ATRIB
-    |
+    | VARS
     ;
 
-WRITELN : TK_WRITE '(' E ')' ';'
-        ;
-
-ATRIB : TK_ID TK_ATRIB E ';'
+WRITE : TK_WRITE '(' E ')' ';'
       ;
+
+ATRIB : TK_ID TK_ATRIB E
+      | VAR TK_ATRIB E ';'
+      ;
+
+VARS : VAR ';' VARS
+     |
+     ;
+
+VAR : TK_ID IDS
+    ;
+
+IDS : IDS ',' TK_ID
+    | TK_ID
+    ;
 
 E : E '+' E
   | E '-' E
