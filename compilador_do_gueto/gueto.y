@@ -20,7 +20,8 @@ struct Tipo {
 
   Tipo(){}
 
-  Tipo (string tipo){ //cria uma var que nao e array
+  // Cria variavel basica
+  Tipo (string tipo){
     tipo_base = tipo;
     ndim = 0;
   }
@@ -69,9 +70,11 @@ string includes =
 %}
 
 %token TK_INT TK_CHAR TK_DOUBLE TK_STRING TK_BOOL TK_VOID
-%token TK_MAIN TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE TK_CSTRING TK_RETURN TK_ATRIB
+%token TK_MAIN TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE
+%token TK_CSTRING TK_RETURN TK_ATRIB
 %token TK_WRITE TK_READ
-%token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_ELSE TK_E TK_AND TK_OR TK_NOT
+%token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_ELSE
+%token TK_E TK_AND TK_OR TK_NOT
 %token TK_FOR TK_WHILE TK_DO
 
 %left TK_AND TK_OR
@@ -92,16 +95,17 @@ DECLS : DECLS DECL
       |
       ;
 
-DECL : VAR ';' // var globais
+DECL : VAR ';' // Variaveis globais
      | FUNCAO
      ;
 
-// permite tipo var1, var2, var3 e tipo var1 = expr; mas nao tipo var1 = expr, var2;
+// Permite tipo var1, var2, var3 e tipo var1 = expr;
+// mas nao tipo var1 = expr, var2;
 VAR : TIPO VAR_DEFS
     | TIPO ATRIBS
     ;
 
-// permite coisas como a, b, c, d na declaracao de uma variavel
+// Permite declaracoes como tipo a, b, c, d;
 VAR_DEFS : VAR_DEF ',' VAR_DEFS
          | VAR_DEF
          ;
@@ -120,7 +124,9 @@ TIPO : TK_INT
      | TK_STRING
      | TK_BOOL
      | TK_VOID
-     //| TK_ID  //necessario se formos implementar tipos nao basicos como Vector ou struct
+     //| TK_ID
+     // Necessario se formos implementar tipos nao basicos
+     // e.g., Vector, Struct
      ;
 
 FUNCAO : TIPO TK_ID '(' F_PARAMS ')' BLOCO
@@ -136,7 +142,8 @@ PARAMS : PARAMS ',' PARAM
 
 PARAM : TIPO TK_ID
       | TIPO TK_ID '[' E ']'
-      | TIPO TK_ID '[' ']' //provavelmente necessario para declarar intero a[]
+      | TIPO TK_ID '[' ']'
+      // Provavelmente necessario para declarar intero a[]
       ;
 
 BLOCO : TK_BEGIN CMDS TK_END
@@ -150,11 +157,12 @@ CMD : CMD_REVELA
     | CMD_DESCOBRE
     | CMD_RETURN
     | CMD_CALL
-    | ATRIBS   // atribuicoes locais
-    | VAR     //var locais
+    | ATRIBS   // Atribuicoes locais
+    | VAR     // Variaveis locais
     ;
 
-// precisa adicionar IF, WHILE, DO, FOR aqui, porem nao pode ser CMD pq nao tem ;
+// Precisa adicionar IF, WHILE, DO, FOR aqui
+// Porem nao pode ser CMD pq nao tem ;
 
 CMD_REVELA : TK_WRITE '(' E ')'
            ;
@@ -166,8 +174,9 @@ CMD_RETURN : TK_RETURN
            | TK_RETURN E
            ;
 
-// definindo a call de uma funcao
-CMD_CALL : TK_ID '(' CALL_PARAMS ')' //chama uma funcao, precisa verificar se foi definida!
+// Definindo a call de uma funcao
+CMD_CALL : TK_ID '(' CALL_PARAMS ')'
+// Chama uma funcao, precisa verificar se foi definida!
          ;
 
 CALL_PARAMS : C_PARAMS
