@@ -89,16 +89,22 @@ MAIN : TK_MAIN BLOCO
      ;
 
 DECLS : DECLS DECL
-      | DECL
+      |
       ;
 
-DECL : VAR
+DECL : VAR ';' // var globais
      | FUNCAO
      ;
 
-VAR : TIPO VAR_DEF ';'
-    | TIPO ATRIBS ';'
+// permite tipo var1, var2, var3 e tipo var1 = expr; mas nao tipo var1 = expr, var2;
+VAR : TIPO VAR_DEFS
+    | TIPO ATRIBS
     ;
+
+// permite coisas como a, b, c, d na declaracao de uma variavel
+VAR_DEFS : VAR_DEF ',' VAR_DEFS
+         | VAR_DEF
+         ;
 
 VAR_DEF  : TK_ID
          | TK_ID '[' E ']'
@@ -114,6 +120,7 @@ TIPO : TK_INT
      | TK_STRING
      | TK_BOOL
      | TK_VOID
+     //| TK_ID  //necessario se formos implementar tipos nao basicos como Vector ou struct
      ;
 
 FUNCAO : TIPO TK_ID '(' F_PARAMS ')' BLOCO
@@ -128,8 +135,8 @@ PARAMS : PARAMS ',' PARAM
        ;
 
 PARAM : TIPO TK_ID
-      | TIPO TK_ID '[' TK_CINT ']'
-      | TIPO TK_ID '[' ']'
+      | TIPO TK_ID '[' E ']'
+      | TIPO TK_ID '[' ']' //provavelmente necessario para declarar intero a[]
       ;
 
 BLOCO : TK_BEGIN CMDS TK_END
@@ -143,8 +150,11 @@ CMD : CMD_REVELA
     | CMD_DESCOBRE
     | CMD_RETURN
     | CMD_CALL
-    | ATRIBS
+    | ATRIBS   // atribuicoes locais
+    | VAR     //var locais
     ;
+
+// precisa adicionar IF, WHILE, DO, FOR aqui, porem nao pode ser CMD pq nao tem ;
 
 CMD_REVELA : TK_WRITE '(' E ')'
            ;
@@ -156,8 +166,19 @@ CMD_RETURN : TK_RETURN
            | TK_RETURN E
            ;
 
-CMD_CALL : TK_ID '(' E ')' //chama uma funcao, precisa verificar se foi definida!
+// definindo a call de uma funcao
+CMD_CALL : TK_ID '(' CALL_PARAMS ')' //chama uma funcao, precisa verificar se foi definida!
          ;
+
+CALL_PARAMS : C_PARAMS | ;
+
+C_PARAMS : C_PARAMS ',' C_PARAM
+         | C_PARAM
+         ;
+
+C_PARAM : TK_ID
+        | TK_ID '[' E ']'
+        ;
 
 E : E '+' E
   | E '-' E

@@ -1,14 +1,12 @@
-/*funcao main*/
-intero a = 0;
-intero b;
-intero c;
+main {
+  intero a, b, soma, d[10];
 
-intero soma(intero a){}
+  a = 10;
+  b = 3;
 
-main
-{
-  a = 2;
-  descobre(a);
-  revela("sup");
-  flwvlw 0;
+  soma = a + b;
+
+  revela(soma);
+
+  flwvlw;
 }
