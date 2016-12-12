@@ -85,11 +85,19 @@ string includes =
 %%
 
 S : DECLS MAIN
+    {
+      cout << includes << endl;
+      cout << $1.codigo << endl;
+      cout << $2.codigo << endl;
+    }
   ;
 
-MAIN : TK_MAIN BLOCO
-     |
-     ;
+MAIN  : TK_MAIN BLOCO
+        {
+          $$.codigo = "int main()" + $2.codigo;
+        }
+      |
+      ;
 
 DECLS : DECLS DECL
       |
@@ -147,6 +155,9 @@ PARAM : TIPO TK_ID
       ;
 
 BLOCO : TK_BEGIN CMDS TK_END
+        {
+          $$.codigo = "{\n" + $2.codigo + "}\n";
+        }
       ;
 
 CMDS : CMD ';' CMDS
