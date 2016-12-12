@@ -110,32 +110,48 @@ DECL : VAR ';' // Variaveis globais
 // Permite tipo var1, var2, var3 e tipo var1 = expr;
 // mas nao tipo var1 = expr, var2;
 VAR : TIPO VAR_DEFS
+      {
+        $$.codigo = "  " + $1.valor + " " + $2.codigo + ";\n";
+      }
     | TIPO ATRIBS
     ;
 
 // Permite declaracoes como tipo a, b, c, d;
-VAR_DEFS : VAR_DEF ',' VAR_DEFS
-         | VAR_DEF
-         ;
+VAR_DEFS  : VAR_DEF ',' VAR_DEFS
+            {
+              $$.codigo = $1.codigo + ", " + $3.codigo;
+            }
+          | VAR_DEF
+            {
+              $$.codigo = $1.codigo;
+            }
+          ;
 
-VAR_DEF  : TK_ID
-         | TK_ID '[' E ']'
-         ;
+VAR_DEF   : TK_ID
+            {
+              $$.codigo = $1.valor;
+            }
+          | TK_ID '[' E ']'
+          ;
 
 ATRIBS : VAR_DEF TK_ATRIB E
        |
        ;
 
-TIPO : TK_INT
-     | TK_CHAR
-     | TK_DOUBLE
-     | TK_STRING
-     | TK_BOOL
-     | TK_VOID
-     //| TK_ID
-     // Necessario se formos implementar tipos nao basicos
-     // e.g., Vector, Struct
-     ;
+TIPO  : TK_INT
+        {
+          Tipo t("i");
+          $$ = Atributos("int", t);
+        }
+      | TK_CHAR
+      | TK_DOUBLE
+      | TK_STRING
+      | TK_BOOL
+      | TK_VOID
+      //| TK_ID
+      // Necessario se formos implementar tipos nao basicos
+      // e.g., Vector, Struct
+      ;
 
 FUNCAO : TIPO TK_ID '(' F_PARAMS ')' BLOCO
        ;

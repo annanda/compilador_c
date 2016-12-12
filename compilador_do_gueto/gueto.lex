@@ -45,7 +45,7 @@ COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 "naum"    { return TK_NOT;   }
 
 {CSTRING}  { return TK_CSTRING; }
-{ID}       { return TK_ID; }
+{ID}       { yylval = Atributos(yytext); return TK_ID; }
 {INT}      { return TK_CINT; }
 {DOUBLE}   { return TK_CDOUBLE; }
 .          { return *yytext; }
