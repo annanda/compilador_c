@@ -2,10 +2,9 @@
 main {
 
   intero a;
-  a = 0;
-  intero c;
+  intero b;
 
-  revela("E aew mundo?\n");
+/*  revela("E aew mundo?\n"); */
 
-  flwvlw;
+/*  flwvlw; */
 }

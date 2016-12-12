@@ -111,7 +111,7 @@ DECL : VAR ';' // Variaveis globais
 // mas nao tipo var1 = expr, var2;
 VAR : TIPO VAR_DEFS
       {
-        $$.codigo = "  " + $1.valor + " " + $2.codigo + ";\n";
+        $$.codigo = "  " + $1.valor + " " + $2.codigo;
       }
     | TIPO ATRIBS
     ;
@@ -176,16 +176,19 @@ BLOCO : TK_BEGIN CMDS TK_END
         }
       ;
 
-CMDS : CMD ';' CMDS
-     |
-     ;
+CMDS  : CMD ';' CMDS
+        {
+          $$.codigo = $1.codigo + ";\n" + $3.codigo;
+        }
+      | { $$ = Atributos(); }
+      ;
 
 CMD : CMD_REVELA
     | CMD_DESCOBRE
     | CMD_RETURN
     | CMD_CALL
     | ATRIBS   // Atribuicoes locais
-    | VAR     // Variaveis locais
+    | VAR { $$ = $1; }    // Variaveis locais
     ;
 
 // Precisa adicionar IF, WHILE, DO, FOR aqui
