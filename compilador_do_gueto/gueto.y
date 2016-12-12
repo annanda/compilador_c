@@ -68,9 +68,10 @@ string includes =
 
 %}
 
+%token TK_INT TK_CHAR TK_DOUBLE TK_STRING TK_BOOL TK_VOID
 %token TK_MAIN TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE TK_CSTRING TK_RETURN TK_ATRIB
 %token TK_WRITE TK_READ
-%token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_E TK_AND TK_OR TK_NOT
+%token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_ELSE TK_E TK_AND TK_OR TK_NOT
 %token TK_FOR TK_WHILE TK_DO
 
 %left TK_AND TK_OR
@@ -80,41 +81,83 @@ string includes =
 
 %%
 
-S : MAIN
+S : DECLS MAIN
   ;
-  
+
 MAIN : TK_MAIN BLOCO
+     |
      ;
+
+DECLS : DECLS DECL
+      | DECL
+      ;
+
+DECL : VAR
+     | FUNCAO
+     ;
+
+VAR : TIPO VAR_DEF ';'
+    | TIPO ATRIBS ';'
+    ;
+
+VAR_DEF  : TK_ID
+         | TK_ID '[' E ']'
+         ;
+
+ATRIBS : VAR_DEF TK_ATRIB E
+       |
+       ;
+
+TIPO : TK_INT
+     | TK_CHAR
+     | TK_DOUBLE
+     | TK_STRING
+     | TK_BOOL
+     | TK_VOID
+     ;
+
+FUNCAO : TIPO TK_ID '(' F_PARAMS ')' BLOCO
+       ;
+
+F_PARAMS : PARAMS
+        |
+        ;
+
+PARAMS : PARAMS ',' PARAM
+       | PARAM
+       ;
+
+PARAM : TIPO TK_ID
+      | TIPO TK_ID '[' TK_CINT ']'
+      | TIPO TK_ID '[' ']'
+      ;
 
 BLOCO : TK_BEGIN CMDS TK_END
       ;
 
-CMDS : CMD CMDS
+CMDS : CMD ';' CMDS
      |
      ;
 
-CMD : WRITE
-    | ATRIB
-    | VARS
+CMD : CMD_REVELA
+    | CMD_DESCOBRE
+    | CMD_RETURN
+    | CMD_CALL
+    | ATRIBS
     ;
 
-WRITE : TK_WRITE '(' E ')' ';'
-      ;
+CMD_REVELA : TK_WRITE '(' E ')'
+           ;
 
-ATRIB : TK_ID TK_ATRIB E
-      | VAR TK_ATRIB E ';'
-      ;
+CMD_DESCOBRE : TK_READ '(' E ')'
+             ;
 
-VARS : VAR ';' VARS
-     |
-     ;
+CMD_RETURN : TK_RETURN
+           | TK_RETURN E
+           ;
 
-VAR : TK_ID IDS
-    ;
-
-IDS : IDS ',' TK_ID
-    | TK_ID
-    ;
+CMD_CALL : TK_ID '(' E ')' //chama uma funcao, precisa verificar se foi definida!
+         ;
 
 E : E '+' E
   | E '-' E

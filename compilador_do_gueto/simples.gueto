@@ -1,7 +1,14 @@
 /*funcao main*/
+intero a = 0;
+intero b;
+intero c;
+
+intero soma(intero a){}
+
 main
 {
-  intero a = 0;
-  revela("a");
-  /*flwvlw;*/
+  a = 2;
+  descobre(a);
+  revela("sup");
+  flwvlw 0;
 }

@@ -14,6 +14,12 @@ COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 {DELIM}    {}
 {COMMENT}  {}
 
+"xar"      { return TK_CHAR;   }
+"intero"   { return TK_INT;    }
+"daboul"   { return TK_DOUBLE; }
+"cadea"    { return TK_STRING; }
+"bul"      { return TK_BOOL;   }
+"nada"     { return TK_VOID;   }
 
 "{"        { return TK_BEGIN;  }
 "}"        { return TK_END;    }
@@ -22,6 +28,7 @@ COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 "revela"   { return TK_WRITE;  }
 "descobre" { return TK_READ;   }
 "se"       { return TK_IF;     }
+"senao"    { return TK_ELSE;   }
 "pra"      { return TK_FOR;    }
 "enquanto" { return TK_WHILE;  }
 "fassa"    { return TK_DO;     }
