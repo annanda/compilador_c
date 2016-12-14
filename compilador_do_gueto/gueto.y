@@ -9,6 +9,7 @@
 using namespace std;
 
 #define MAX_DIM 2
+#define MAX_STRING_SIZE 256
 
 struct Tipo;
 struct Atributos;
@@ -21,6 +22,7 @@ void insere_ts(string nome, Tipo tipo);
 
 Tipo consulta_ts(string nome);
 
+string toString(int n);
 string declara_variavel(string nome, Tipo tipo);
 string traduz_interno_para_C(string interno);
 string traduz_gueto_para_interno(string gueto);
@@ -153,6 +155,9 @@ VAR : TIPO VAR_DEFS
         // Aqui podemos fazer apenas a atribuicao, uma vez que
         // as variaveis sejam adequadamente declaradas no inicio
         // do bloco.
+        // Problema encontrado: nao temos como saber dentro da producao
+        // de ATRIB se a variavel ja era para ter sido declarada.
+        // Provavelmente nao poderemos usar ATRIB aqui.
       }
     ;
 
@@ -202,7 +207,8 @@ TIPO  : TK_INT
         }
       | TK_STRING
         {
-          // TODO(jullytta): lidar com strings
+          Tipo t("s", MAX_STRING_SIZE);
+          $$ = Atributos("char[]", t);
         }
       | TK_BOOL
         {
@@ -349,12 +355,21 @@ Tipo consulta_ts(string nome) {
   return ts[nome];
 }
 
+string toString(int n){
+  char buff[100];
+
+  sprintf(buff, "%d", n);
+
+  return buff;
+}
+
 string declara_variavel(string nome, Tipo tipo){
+  if(tipo.tipo_base == "s")
+    return "char " + nome + "[" + toString(MAX_STRING_SIZE) + "]";
   return traduz_interno_para_C(tipo.tipo_base) + " " + nome;
 }
 
 string traduz_interno_para_C(string interno){
-  // TODO(jullytta): lidar com strings
   if(interno == "i")
     return "int";
   if(interno == "c")
