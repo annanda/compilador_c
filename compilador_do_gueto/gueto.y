@@ -18,6 +18,7 @@ int yylex();
 
 void yyerror(const char* st);
 void erro(string msg);
+void inicializa_operadores();
 void insere_ts(string nome, Tipo tipo);
 
 Tipo consulta_ts(string nome);
@@ -35,6 +36,9 @@ map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
 // que vao ser declaradas no inicio de cada bloco.
 vector<string> vars_bloco;
+// Faz o mapeamento dos tipos dos operadores
+map<string, string> tipo_opr;
+
 
 struct Tipo {
   string tipo_base;
@@ -341,6 +345,20 @@ void erro(string msg){
   exit(1);
 }
 
+void inicializa_operadores() {
+  // Operador +
+  // TODO(jullytta): operacoes com char,
+  // concatenar int/double/char com string
+  tipo_opr["i+i"] = "i";
+  tipo_opr["i+d"] = "d";
+
+  tipo_opr["d+i"] = "d";
+  tipo_opr["d+d"] = "d";
+
+  tipo_opr["s+s"] = "s";
+
+}
+
 void insere_ts(string nome, Tipo tipo){
   if(ts.find(nome) != ts.end()){
     erro("Variavel ja declarada: " + nome);
@@ -428,5 +446,6 @@ int is_atribuivel(Atributos s1, Atributos s3){
 }
 
 int main(int argc, char* argv[]){
+  inicializa_operadores();
   yyparse();
 }
