@@ -1,6 +1,7 @@
 
 main {
   intero a, b;
+  a = 0;
   xar c;
   daboul d;
   bul f;

@@ -30,6 +30,9 @@ string atribuicao_var(Atributos s1, Atributos s3);
 int is_atribuivel(Atributos s1, Atributos s3);
 
 map<string, Tipo> ts;
+// Pilha de variaveis (temporarias ou definidas pelo usuario)
+// que vao ser declaradas no inicio de cada bloco.
+vector<string> vars_bloco;
 
 struct Tipo {
   string tipo_base;
@@ -132,16 +135,16 @@ DECL : VAR ';' // Variaveis globais
 VAR : TIPO VAR_DEFS
       {
         $$.codigo = "";
-        // Aqui precisamos iterar sobre a lista_str de $2,
-        // declarar cada variável e inseri-las na tabela
-        // de simbolos.
-        // Idealmente nao declarariamos as variaveis direto, mas
-        // sim colocariamos elas numa lista para serem declaradas
-        // no inicio do bloco.
+        // Os nomes das variaveis estao na lista_str de $2.
+        // Cada variavel e' inserida na tabela de simbolos e
+        // sua declaracao e' adicionada a lista de declaracao
+        // do bloco atual, que so sera impressa no inicio do bloco.
         for(vector<string>::iterator it = $2.lista_str.begin();
                                      it != $2.lista_str.end();
                                      it++){
-          $$.codigo += "  " + declara_variavel(*it, $1.tipo) + ";\n";
+          vars_bloco[vars_bloco.size()-1] += "  "
+                                          + (declara_variavel(*it, $1.tipo))
+                                          + ";\n";
           insere_ts(*it, $1.tipo);
         }
       }
@@ -233,9 +236,14 @@ PARAM : TIPO TK_ID
       // Provavelmente necessario para declarar intero a[]
       ;
 
-BLOCO : TK_BEGIN CMDS TK_END
+BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
         {
-          $$.codigo = "{\n" + $2.codigo + "}\n";
+          $$.codigo = "{\n";
+          // Adiciona as variaveis desse bloco ao inicio do mesmo e
+          // desempilha a lista de variaveis desse bloco.
+          $$.codigo += vars_bloco[vars_bloco.size()-1];
+          vars_bloco.pop_back();
+          $$.codigo += $3.codigo + "}\n";
         }
       ;
 
