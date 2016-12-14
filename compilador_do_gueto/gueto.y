@@ -477,10 +477,6 @@ string atribuicao_var(Atributos s1, Atributos s3){
 }
 
 int is_atribuivel(Atributos s1, Atributos s3){
-  // dummy code enquanto essa funcao nao esta pronta
-  return 1;
-
-  // precisa gerar o codigo das expressoes para isso funcionar
   // essa nao pode ser a unica condicao
   if (s1.tipo.tipo_base == s3.tipo.tipo_base){
     return 1;
