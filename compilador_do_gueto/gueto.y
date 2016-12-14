@@ -20,6 +20,7 @@ void insere_ts(string nome, Tipo tipo);
 
 string declara_variavel(string nome, Tipo tipo);
 string traduz_interno_para_C(string interno);
+string traduz_gueto_para_interno(string gueto);
 
 map<string, Tipo> ts;
 
@@ -174,10 +175,29 @@ TIPO  : TK_INT
           $$ = Atributos("int", t);
         }
       | TK_CHAR
+        {
+          Tipo t("c");
+          $$ = Atributos("char", t);
+        }
       | TK_DOUBLE
+        {
+          Tipo t("d");
+          $$ = Atributos("double", t);
+        }
       | TK_STRING
+        {
+          // TODO(jullytta): lidar com strings
+        }
       | TK_BOOL
+        {
+          Tipo t("b");
+          $$ = Atributos("int", t);
+        }
       | TK_VOID
+        {
+          Tipo t("v");
+          $$ = Atributos("void", t);
+        }
       //| TK_ID
       // Necessario se formos implementar tipos nao basicos
       // e.g., Vector, Struct
@@ -296,8 +316,24 @@ string declara_variavel(string nome, Tipo tipo){
 }
 
 string traduz_interno_para_C(string interno){
+  // TODO(jullytta): lidar com strings
   if(interno == "i")
     return "int";
+  if(interno == "c")
+    return "char";
+  if(interno == "b")
+    return "int";
+  if(interno == "d")
+    return "double";
+  if(interno == "v")
+    return "void";
+  erro("Bug no compilador. Tipo interno inexistente.");
+  return "";
+}
+
+string traduz_gueto_para_interno(string gueto){
+  if(gueto == "intero")
+    return "i";
 }
 
 int main(int argc, char* argv[]){

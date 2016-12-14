@@ -2,7 +2,9 @@
 main {
 
   intero a, b;
-
+  xar c;
+  daboul d;
+  bul f;
 
 /*  revela("E aew mundo?\n"); */
 
