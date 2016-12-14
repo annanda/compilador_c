@@ -45,7 +45,8 @@ COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 "naum"    { yylval = Atributos(yytext); return TK_NOT;   }
 
 {CSTRING}  { yylval = Atributos(yytext, Tipo("string")); return TK_CSTRING; }
-{ID}       { yylval = Atributos(yytext); return TK_ID;                      }
+{ID}       { yylval = Atributos(renomeia_variavel_usuario(yytext));
+              return TK_ID;                                                 }
 {INT}      { yylval = Atributos(yytext, Tipo("int")); return TK_CINT;       }
 {DOUBLE}   { yylval = Atributos(yytext, Tipo("double")); return TK_CDOUBLE; }
 .          { yylval = Atributos(yytext); return *yytext;                    }
