@@ -11,6 +11,7 @@ using namespace std;
 #define MAX_DIM 2
 
 struct Tipo;
+struct Atributos;
 
 int yylex();
 
@@ -24,6 +25,9 @@ string declara_variavel(string nome, Tipo tipo);
 string traduz_interno_para_C(string interno);
 string traduz_gueto_para_interno(string gueto);
 string renomeia_variavel_usuario(string nome);
+string atribuicao_var(Atributos s1, Atributos s3);
+
+int is_atribuivel(Atributos s1, Atributos s3);
 
 map<string, Tipo> ts;
 
@@ -71,9 +75,7 @@ struct Atributos {
   }
 };
 
-string atribuicao_var(Atributos s1, Atributos s3);
 
-int is_atribuivel(Atributos s1, Atributos s3);
 
 string includes =
     "#include <iostream>\n"
