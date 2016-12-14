@@ -13,9 +13,15 @@ using namespace std;
 struct Tipo;
 
 int yylex();
-void yyerror( const char* st );
+
+void yyerror(const char* st);
+void erro(string msg);
+void insere_ts(string nome, Tipo tipo);
+
 string declara_variavel(string nome, Tipo tipo);
 string traduz_interno_para_C(string interno);
+
+map<string, Tipo> ts;
 
 struct Tipo {
   string tipo_base;
@@ -118,12 +124,23 @@ VAR : TIPO VAR_DEFS
         $$.codigo = "";
         // Aqui precisamos iterar sobre a lista_str de $2,
         // declarar cada variável e inseri-las na tabela
-        // de simbolos
-        for(vector<string>::iterator it = $2.lista_str.begin(); it != $2.lista_str.end(); it++){
+        // de simbolos.
+        // Idealmente nao declarariamos as variaveis direto, mas
+        // sim colocariamos elas numa lista para serem declaradas
+        // no inicio do bloco.
+        for(vector<string>::iterator it = $2.lista_str.begin();
+                                     it != $2.lista_str.end();
+                                     it++){
           $$.codigo += "  " + declara_variavel(*it, $1.tipo) + ";\n";
+          insere_ts(*it, $1.tipo);
         }
       }
-    | TIPO ATRIBS
+    | TIPO ATRIB
+      {
+        // Aqui podemos fazer apenas a atribuicao, uma vez que
+        // as variaveis sejam adequadamente declaradas no inicio
+        // do bloco.
+      }
     ;
 
 // Permite declaracoes como tipo a, b, c, d;
@@ -147,7 +164,7 @@ VAR_DEF   : TK_ID
           | TK_ID '[' E ']'
           ;
 
-ATRIBS : VAR_DEF TK_ATRIB E
+ATRIB : VAR_DEF TK_ATRIB E
        |
        ;
 
@@ -200,7 +217,7 @@ CMD : CMD_REVELA
     | CMD_DESCOBRE
     | CMD_RETURN
     | CMD_CALL
-    | ATRIBS   // Atribuicoes locais
+    | ATRIB   // Atribuicoes locais
     | VAR { $$ = $1; }    // Variaveis locais
     ;
 
@@ -256,10 +273,22 @@ int nlinha = 1;
 
 int yyparse();
 
-void yyerror( const char* st )
-{
+void yyerror(const char* st){
   puts( st );
   printf( "Linha: %d, [%s]\n", nlinha, yytext );
+}
+
+void erro(string msg){
+  cerr << "Erro: " << msg << endl;
+  fprintf(stderr, "Linha: %d, [%s]\n", nlinha, yytext );
+  exit(1);
+}
+
+void insere_ts(string nome, Tipo tipo){
+  if(ts.find(nome) != ts.end()){
+    erro("Variavel ja declarada: " + nome);
+  }
+  ts[nome] = tipo;
 }
 
 string declara_variavel(string nome, Tipo tipo){
@@ -271,7 +300,6 @@ string traduz_interno_para_C(string interno){
     return "int";
 }
 
-int main( int argc, char* argv[] )
-{
+int main(int argc, char* argv[]){
   yyparse();
 }
