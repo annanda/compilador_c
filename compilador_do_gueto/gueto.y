@@ -357,13 +357,25 @@ string traduz_interno_para_C(string interno){
     return "double";
   if(interno == "v")
     return "void";
-  erro("Bug no compilador. Tipo interno inexistente.");
+  erro("Bug no compilador! Tipo interno inexistente: " + interno);
   return "";
 }
 
 string traduz_gueto_para_interno(string gueto){
+  if(gueto == "xar")
+    return "c";
   if(gueto == "intero")
     return "i";
+  if(gueto == "daboul")
+    return "d";
+  if(gueto == "cadea")
+    return "s";
+  if(gueto == "bul")
+    return "b";
+  if(gueto == "nada")
+    return "v";
+  erro("Bug no compilador! Tipo em gueto inexistente: " + gueto);
+  return "";
 }
 
 string renomeia_variavel_usuario(string nome){
