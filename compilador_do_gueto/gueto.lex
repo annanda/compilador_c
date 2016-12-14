@@ -21,33 +21,33 @@ COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 "bul"      { return TK_BOOL;   }
 "nada"     { return TK_VOID;   }
 
-"{"        { return TK_BEGIN;  }
-"}"        { return TK_END;    }
-"main"     { return TK_MAIN;   }
-"flwvlw"   { return TK_RETURN; }
-"revela"   { return TK_WRITE;  }
-"descobre" { return TK_READ;   }
-"se"       { return TK_IF;     }
-"senao"    { return TK_ELSE;   }
-"pra"      { return TK_FOR;    }
-"enquanto" { return TK_WHILE;  }
-"fassa"    { return TK_DO;     }
+"{"        { yylval = Atributos(yytext); return TK_BEGIN;  }
+"}"        { yylval = Atributos(yytext); return TK_END;    }
+"main"     { yylval = Atributos(yytext); return TK_MAIN;   }
+"flwvlw"   { yylval = Atributos(yytext); return TK_RETURN; }
+"revela"   { yylval = Atributos(yytext); return TK_WRITE;  }
+"descobre" { yylval = Atributos(yytext); return TK_READ;   }
+"se"       { yylval = Atributos(yytext); return TK_IF;     }
+"senao"    { yylval = Atributos(yytext); return TK_ELSE;   }
+"pra"      { yylval = Atributos(yytext); return TK_FOR;    }
+"enquanto" { yylval = Atributos(yytext); return TK_WHILE;  }
+"fassa"    { yylval = Atributos(yytext); return TK_DO;     }
 
-"="       { return TK_ATRIB; }
-"<="      { return TK_LE;    }
-">="      { return TK_GE;    }
-"<>"      { return TK_DIFF;  }
-"=="      { return TK_E;     }
-"<"       { return TK_L;     }
-">"       { return TK_G;     }
-"e"       { return TK_AND;   }
-"ou"      { return TK_OR;    }
-"naum"    { return TK_NOT;   }
+"="       { yylval = Atributos(yytext); return TK_ATRIB; }
+"<="      { yylval = Atributos(yytext); return TK_LE;    }
+">="      { yylval = Atributos(yytext); return TK_GE;    }
+"<>"      { yylval = Atributos(yytext); return TK_DIFF;  }
+"=="      { yylval = Atributos(yytext); return TK_E;     }
+"<"       { yylval = Atributos(yytext); return TK_L;     }
+">"       { yylval = Atributos(yytext); return TK_G;     }
+"e"       { yylval = Atributos(yytext); return TK_AND;   }
+"ou"      { yylval = Atributos(yytext); return TK_OR;    }
+"naum"    { yylval = Atributos(yytext); return TK_NOT;   }
 
-{CSTRING}  { return TK_CSTRING; }
-{ID}       { yylval = Atributos(yytext); return TK_ID; }
-{INT}      { return TK_CINT; }
-{DOUBLE}   { return TK_CDOUBLE; }
-.          { return *yytext; }
+{CSTRING}  { yylval = Atributos(yytext, Tipo("string")); return TK_CSTRING; }
+{ID}       { yylval = Atributos(yytext); return TK_ID;                      }
+{INT}      { yylval = Atributos(yytext, Tipo("int")); return TK_CINT;       }
+{DOUBLE}   { yylval = Atributos(yytext, Tipo("double")); return TK_CDOUBLE; }
+.          { yylval = Atributos(yytext); return *yytext;                    }
 
 %%

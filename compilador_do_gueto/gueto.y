@@ -18,9 +18,12 @@ void yyerror(const char* st);
 void erro(string msg);
 void insere_ts(string nome, Tipo tipo);
 
+Tipo consulta_ts(string nome);
+
 string declara_variavel(string nome, Tipo tipo);
 string traduz_interno_para_C(string interno);
 string traduz_gueto_para_interno(string gueto);
+string renomeia_variavel_usuario(string nome);
 
 map<string, Tipo> ts;
 
@@ -67,6 +70,10 @@ struct Atributos {
     this->tipo = t;
   }
 };
+
+string atribuicao_var(Atributos s1, Atributos s3);
+
+int is_atribuivel(Atributos s1, Atributos s3);
 
 string includes =
     "#include <iostream>\n"
@@ -165,9 +172,13 @@ VAR_DEF   : TK_ID
           | TK_ID '[' E ']'
           ;
 
-ATRIB : VAR_DEF TK_ATRIB E
-       |
-       ;
+ATRIB : TK_ID TK_ATRIB E
+        {
+          $1.tipo = consulta_ts($1.valor);
+          $$.codigo = atribuicao_var($1, $3);
+        }
+      | TK_ID '[' E ']' TK_ATRIB E
+      ;
 
 TIPO  : TK_INT
         {
@@ -281,7 +292,17 @@ E : E '+' E
 
 F : TK_ID
   | TK_CINT
+    {
+      $$.valor = $1.valor;
+      $$.tipo = Tipo("i");
+      $$.codigo = $1.codigo;
+    }
   | TK_CDOUBLE
+    {
+      $$.valor = $1.valor;
+      $$.tipo = Tipo("d");
+      $$.codigo = $1.codigo;
+    }
   | TK_CSTRING
   ;
 
@@ -311,6 +332,13 @@ void insere_ts(string nome, Tipo tipo){
   ts[nome] = tipo;
 }
 
+Tipo consulta_ts(string nome) {
+  if(ts.find(nome) == ts.end()){
+    erro("Variavel nao declarada: " + nome);
+  }
+  return ts[nome];
+}
+
 string declara_variavel(string nome, Tipo tipo){
   return traduz_interno_para_C(tipo.tipo_base) + " " + nome;
 }
@@ -334,6 +362,32 @@ string traduz_interno_para_C(string interno){
 string traduz_gueto_para_interno(string gueto){
   if(gueto == "intero")
     return "i";
+}
+
+string renomeia_variavel_usuario(string nome){
+  return "_" + nome;
+}
+
+string atribuicao_var(Atributos s1, Atributos s3){
+  if (is_atribuivel(s1, s3) == 1){
+    if (s1.tipo.tipo_base == "s"){
+       //lidarei com strings depois
+    }else{
+      return s3.codigo + "  " + s1.valor + " = " + s3.valor + ";\n";
+    }
+  }else{
+    // melhorar esse erro
+    erro("Atribuicao nao permitida!");
+  }
+}
+
+int is_atribuivel(Atributos s1, Atributos s3){
+  // precisa gerar o codigo das expressoes para isso funcionar
+  // essa nao pode ser a unica condicao
+  if (s1.tipo.tipo_base == s3.tipo.tipo_base){
+    return 1;
+  }
+  return 0;
 }
 
 int main(int argc, char* argv[]){
