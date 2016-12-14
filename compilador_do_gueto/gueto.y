@@ -311,9 +311,21 @@ E : E '+' E
       $$ = gera_codigo_operador($1, "+", $3);
     }
   | E '-' E
+    {
+      $$ = gera_codigo_operador($1, "-", $3);
+    }
   | E '*' E
+    {
+      $$ = gera_codigo_operador($1, "*", $3);
+    }
   | E '/' E
+    {
+      $$ = gera_codigo_operador($1, "/", $3);
+    }
   | '(' E ')'
+    {
+      $$ = $2;
+    }
   | F
   ;
 
@@ -358,16 +370,34 @@ void erro(string msg){
 }
 
 void inicializa_operadores() {
-  // Operador +
   // TODO(jullytta): operacoes com char,
   // concatenar int/double/char com string
+
+  // Operador +
   tipo_opr["i+i"] = "i";
   tipo_opr["i+d"] = "d";
-
   tipo_opr["d+i"] = "d";
   tipo_opr["d+d"] = "d";
-
   tipo_opr["s+s"] = "s";
+
+  // Operador -
+  tipo_opr["i-i"] = "i";
+  tipo_opr["i-d"] = "d";
+  tipo_opr["d-i"] = "d";
+  tipo_opr["d-d"] = "d";
+
+  // Operador *
+  tipo_opr["i*i"] = "i";
+  tipo_opr["i*d"] = "d";
+  tipo_opr["d*i"] = "d";
+  tipo_opr["d*d"] = "d";
+
+  // Operador /
+  // TODO(jullytta): lidar com a polemica desse operador
+  tipo_opr["i/d"] = "d";
+  tipo_opr["i/i"] = "i";
+  tipo_opr["d/i"] = "d";
+  tipo_opr["d/d"] = "d";
 
 }
 
@@ -467,12 +497,14 @@ string atribuicao_var(Atributos s1, Atributos s3){
   if (is_atribuivel(s1, s3) == 1){
     if (s1.tipo.tipo_base == "s"){
        //lidarei com strings depois
-    }else{
+    } else{
       return s3.codigo + "  " + s1.valor + " = " + s3.valor + ";\n";
     }
-  }else{
+  } else{
     // melhorar esse erro
-    erro("Atribuicao nao permitida!");
+    erro("Atribuicao nao permitida! "
+          + traduz_interno_para_gueto(s1.tipo.tipo_base) + " = "
+          + traduz_interno_para_gueto(s3.tipo.tipo_base));
   }
 }
 

@@ -1,17 +1,10 @@
 
 main {
-  intero a, b, i;
+
+  intero a;
   a = 3;
-  xar c;
-  daboul d;
-  i = 1;
-  b = 2;
-  bul f;
-  cadea g;
-  intero h;
-  h = a + b + i;
+  daboul b, c;
+  b = 2.0;
+  c = a * b;
 
-/*  revela("E aew mundo?\n"); */
-
-/*  flwvlw; */
 }
