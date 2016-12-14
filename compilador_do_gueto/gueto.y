@@ -27,10 +27,14 @@ string toString(int n);
 string declara_variavel(string nome, Tipo tipo);
 string traduz_interno_para_C(string interno);
 string traduz_gueto_para_interno(string gueto);
+string traduz_interno_para_gueto(string interno);
 string renomeia_variavel_usuario(string nome);
+string gera_nome_var_temp(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
 
 int is_atribuivel(Atributos s1, Atributos s3);
+
+Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -303,6 +307,9 @@ C_PARAM : TK_ID
         ;
 
 E : E '+' E
+    {
+      $$ = gera_codigo_operador($1, "+", $3);
+    }
   | E '-' E
   | E '*' E
   | E '/' E
@@ -311,6 +318,11 @@ E : E '+' E
   ;
 
 F : TK_ID
+    {
+      $$.valor = $1.valor;
+      $$.tipo = consulta_ts($1.valor);
+      $$.codigo = $1.codigo;
+    }
   | TK_CINT
     {
       $$.valor = $1.valor;
@@ -419,8 +431,36 @@ string traduz_gueto_para_interno(string gueto){
   return "";
 }
 
+string traduz_interno_para_gueto(string interno){
+  if(interno == "i")
+    return "intero";
+  if(interno == "c")
+    return "xar";
+  if(interno == "b")
+    return "bul";
+  if(interno == "d")
+    return "daboul";
+  if(interno == "v")
+    return "nada";
+  if(interno == "s")
+    return "cadea";
+  erro("Bug no compilador! Tipo interno inexistente: " + interno);
+  return "";
+}
+
 string renomeia_variavel_usuario(string nome){
   return "_" + nome;
+}
+
+string gera_nome_var_temp(string tipo_interno){
+  static int n = 1;
+  string nome = "t" + tipo_interno + "_" + toString(n++);
+
+  vars_bloco[vars_bloco.size()-1] += "  "
+                                  + declara_variavel(nome, Tipo(tipo_interno))
+                                  + ";\n";
+
+  return nome;
 }
 
 string atribuicao_var(Atributos s1, Atributos s3){
@@ -437,6 +477,9 @@ string atribuicao_var(Atributos s1, Atributos s3){
 }
 
 int is_atribuivel(Atributos s1, Atributos s3){
+  // dummy code enquanto essa funcao nao esta pronta
+  return 1;
+
   // precisa gerar o codigo das expressoes para isso funcionar
   // essa nao pode ser a unica condicao
   if (s1.tipo.tipo_base == s3.tipo.tipo_base){
@@ -444,6 +487,33 @@ int is_atribuivel(Atributos s1, Atributos s3){
   }
   return 0;
 }
+
+Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
+  Atributos ss;
+
+  string tipo1 = s1.tipo.tipo_base;
+  string tipo3 = s3.tipo.tipo_base;
+  string tipo_resultado = tipo_opr[tipo1 + opr + tipo3];
+
+  // TODO(jullytta): conferir se tratamos de vetores aqui,
+  // ou de strings.
+  if(tipo_resultado == "")
+    erro("Operacao nao permitida. "
+       + traduz_interno_para_gueto(tipo1)
+       + " " + opr + " "
+       + traduz_interno_para_gueto(tipo3));
+
+  ss.valor = gera_nome_var_temp(tipo_resultado);
+  ss.tipo = Tipo(tipo_resultado);
+
+  ss.codigo = s1.codigo + s3.codigo
+            + "  " + ss.valor + " = "
+            + s1.valor + " " + opr + " " + s3.valor
+            + ";\n";
+
+  return ss;
+}
+
 
 int main(int argc, char* argv[]){
   inicializa_operadores();
