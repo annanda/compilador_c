@@ -1,8 +1,7 @@
 
 main {
 
-  intero a;
-  intero b;
+  intero a, b;
 
 /*  revela("E aew mundo?\n"); */
 

@@ -10,8 +10,12 @@ using namespace std;
 
 #define MAX_DIM 2
 
+struct Tipo;
+
 int yylex();
 void yyerror( const char* st );
+string declara_variavel(string nome, Tipo tipo);
+string traduz_interno_para_C(string interno);
 
 struct Tipo {
   string tipo_base;
@@ -43,7 +47,7 @@ struct Tipo {
 struct Atributos {
   string valor, codigo;
   Tipo tipo;
-  vector<string> lista;
+  vector<string> lista_str;
 
   Atributos(){}
 
@@ -111,7 +115,13 @@ DECL : VAR ';' // Variaveis globais
 // mas nao tipo var1 = expr, var2;
 VAR : TIPO VAR_DEFS
       {
-        $$.codigo = "  " + $1.valor + " " + $2.codigo;
+        $$.codigo = "";
+        // Aqui precisamos iterar sobre a lista_str de $2,
+        // declarar cada variável e inseri-las na tabela
+        // de simbolos
+        for(vector<string>::iterator it = $2.lista_str.begin(); it != $2.lista_str.end(); it++){
+          $$.codigo += "  " + declara_variavel(*it, $1.tipo) + ";\n";
+        }
       }
     | TIPO ATRIBS
     ;
@@ -119,17 +129,20 @@ VAR : TIPO VAR_DEFS
 // Permite declaracoes como tipo a, b, c, d;
 VAR_DEFS  : VAR_DEF ',' VAR_DEFS
             {
-              $$.codigo = $1.codigo + ", " + $3.codigo;
+              $$.lista_str.push_back($1.valor);
+              $$.lista_str.insert($$.lista_str.end(),
+                                  $3.lista_str.begin(),
+                                  $3.lista_str.end());
             }
           | VAR_DEF
             {
-              $$.codigo = $1.codigo;
+              $$.lista_str.push_back($1.valor);
             }
           ;
 
 VAR_DEF   : TK_ID
             {
-              $$.codigo = $1.valor;
+              $$.valor = $1.valor;
             }
           | TK_ID '[' E ']'
           ;
@@ -178,7 +191,7 @@ BLOCO : TK_BEGIN CMDS TK_END
 
 CMDS  : CMD ';' CMDS
         {
-          $$.codigo = $1.codigo + ";\n" + $3.codigo;
+          $$.codigo = $1.codigo + $3.codigo;
         }
       | { $$ = Atributos(); }
       ;
@@ -247,6 +260,15 @@ void yyerror( const char* st )
 {
   puts( st );
   printf( "Linha: %d, [%s]\n", nlinha, yytext );
+}
+
+string declara_variavel(string nome, Tipo tipo){
+  return traduz_interno_para_C(tipo.tipo_base) + " " + nome;
+}
+
+string traduz_interno_para_C(string interno){
+  if(interno == "i")
+    return "int";
 }
 
 int main( int argc, char* argv[] )
