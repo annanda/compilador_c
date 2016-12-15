@@ -6,5 +6,7 @@ main {
   daboul b, c;
   b = 2.0;
   c = a * b;
+  cadea cad;
+  cad = "sup, bro! Isto e um comentario grande o suficiente para ultrapassar o limite de 256 caracteres que e indicado pelo nosso compilador simplesmente porque eu quero testar o que acontece quando a gente escreve algo tao grande quanto eu estou escrevendo, espero que funcione, mas se nao funcionar culparei a jullyana... hahahahhahaahaha";
 
 }

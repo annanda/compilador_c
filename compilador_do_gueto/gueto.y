@@ -348,6 +348,11 @@ F : TK_ID
       $$.codigo = $1.codigo;
     }
   | TK_CSTRING
+    {
+      $$.valor = $1.valor;
+      $$.tipo = Tipo("s");
+      $$.codigo = $1.codigo;
+    }
   ;
 
 %%
@@ -398,6 +403,15 @@ void inicializa_operadores() {
   tipo_opr["i/i"] = "i";
   tipo_opr["d/i"] = "d";
   tipo_opr["d/d"] = "d";
+
+  // Operador =
+  tipo_opr["i=i"] = "i";
+  tipo_opr["b=b"] = "b";
+  tipo_opr["d=d"] = "d";
+  tipo_opr["d=i"] = "d";
+  tipo_opr["c=c"] = "c";
+  tipo_opr["s=s"] = "s";
+  tipo_opr["s=c"] = "s";
 
 }
 
@@ -493,24 +507,41 @@ string gera_nome_var_temp(string tipo_interno){
   return nome;
 }
 
+/*vector<string> split(string const & s, size_t count){
+    size_t minsize = s.size()/count;
+    int extra = s.size() - minsize * count;
+    vector<string> tokens;
+    for(size_t i = 0, offset=0 ; i < count ; ++i, --extra){
+      size_t size = minsize + (extra>0?1:0);
+      if ( (offset + size) < s.size())
+        tokens.push_back(s.substr(offset,size));
+      else
+        tokens.push_back(s.substr(offset, s.size() - offset));
+      offset += size;
+    }
+    return tokens;
+}*/
+
 string atribuicao_var(Atributos s1, Atributos s3){
   if (is_atribuivel(s1, s3) == 1){
     if (s1.tipo.tipo_base == "s"){
-       //lidarei com strings depois
+      // precisa quebrar a string se for maior de 256 chars
+       //vector<string> a = split(s3.valor, s3.valor.size()/255 + 1);
+       return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", 256);\n";
     } else{
       return s3.codigo + "  " + s1.valor + " = " + s3.valor + ";\n";
     }
   } else{
-    // melhorar esse erro
     erro("Atribuicao nao permitida! "
           + traduz_interno_para_gueto(s1.tipo.tipo_base) + " = "
           + traduz_interno_para_gueto(s3.tipo.tipo_base));
   }
 }
 
+// add tipo_opr que vc precisar para atribuicao funcionar
 int is_atribuivel(Atributos s1, Atributos s3){
-  // essa nao pode ser a unica condicao
-  if (s1.tipo.tipo_base == s3.tipo.tipo_base){
+  string key = s1.tipo.tipo_base + "=" + s3.tipo.tipo_base;
+  if (tipo_opr.find(key) != tipo_opr.end()){
     return 1;
   }
   return 0;
