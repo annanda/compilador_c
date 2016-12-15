@@ -33,6 +33,7 @@ string gera_nome_var_temp(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
 
 int is_atribuivel(Atributos s1, Atributos s3);
+int toInt(string valor);
 
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
 
@@ -102,9 +103,9 @@ string includes =
 
 %}
 
-%token TK_INT TK_CHAR TK_DOUBLE TK_STRING TK_BOOL TK_VOID
+%token TK_INT TK_CHAR TK_DOUBLE TK_STRING TK_BOOL TK_VOID TK_TRUE TK_FALSE
 %token TK_MAIN TK_BEGIN TK_END TK_ID TK_CINT TK_CDOUBLE
-%token TK_CSTRING TK_RETURN TK_ATRIB
+%token TK_CSTRING TK_RETURN TK_ATRIB TK_CCHAR
 %token TK_WRITE TK_READ
 %token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_ELSE
 %token TK_E TK_AND TK_OR TK_NOT
@@ -347,13 +348,34 @@ F : TK_ID
       $$.tipo = Tipo("d");
       $$.codigo = $1.codigo;
     }
+  | TK_CCHAR
+    {
+      $$.valor = $1.valor;
+      $$.tipo = Tipo("c");
+      $$.codigo = $1.codigo;
+    }
   | TK_CSTRING
     {
       $$.valor = $1.valor;
       $$.tipo = Tipo("s");
       $$.codigo = $1.codigo;
     }
+  | BOOL
   ;
+
+BOOL : TK_TRUE
+      {
+        $$.valor = "1";
+        $$.tipo = Tipo("b");
+        $$.codigo = $1.codigo;
+      }
+     | TK_FALSE
+      {
+        $$.valor = "0";
+        $$.tipo = Tipo("b");
+        $$.codigo = $1.codigo;
+      }
+     ;
 
 %%
 
@@ -407,6 +429,7 @@ void inicializa_operadores() {
   // Operador =
   tipo_opr["i=i"] = "i";
   tipo_opr["b=b"] = "b";
+  tipo_opr["b=i"] = "b";
   tipo_opr["d=d"] = "d";
   tipo_opr["d=i"] = "d";
   tipo_opr["c=c"] = "c";
@@ -528,7 +551,10 @@ string atribuicao_var(Atributos s1, Atributos s3){
       // precisa quebrar a string se for maior de 256 chars
        //vector<string> a = split(s3.valor, s3.valor.size()/255 + 1);
        return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", 256);\n";
-    } else{
+    } else if (s1.tipo.tipo_base == "b" && s3.tipo.tipo_base == "i") {
+      string val = (s3.valor == "0" ? "0" : "1"); //lida com b=i
+      return s3.codigo + "  " + s1.valor + " = " + val + ";\n";
+    } else {
       return s3.codigo + "  " + s1.valor + " = " + s3.valor + ";\n";
     }
   } else{
@@ -538,13 +564,19 @@ string atribuicao_var(Atributos s1, Atributos s3){
   }
 }
 
-// add tipo_opr que vc precisar para atribuicao funcionar
 int is_atribuivel(Atributos s1, Atributos s3){
   string key = s1.tipo.tipo_base + "=" + s3.tipo.tipo_base;
   if (tipo_opr.find(key) != tipo_opr.end()){
     return 1;
   }
   return 0;
+}
+
+int toInt(string valor) {
+  int aux = -1;
+  if( sscanf( valor.c_str(), "%d", &aux ) != 1 )
+    erro( "Numero invalido: " + valor );
+  return aux;
 }
 
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){

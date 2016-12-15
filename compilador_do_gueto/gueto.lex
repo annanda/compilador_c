@@ -6,13 +6,19 @@ INT     {NUMERO}+
 DOUBLE  {NUMERO}+("."{NUMERO}+)?
 ID      {LETRA}({LETRA}|{NUMERO})*
 CSTRING \"(\\.|[^\\"])*\"
+CCHAR   \'(\\.|[^\\'])?\'
 COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
+F       "FALSE"|"false"|"False"
+T       "true"|"TRUE"|"True"
 
 %%
 
 {LINHA}    { nlinha++; }
 {DELIM}    {}
 {COMMENT}  {}
+
+{T}        { return TK_TRUE;   }
+{F}        { return TK_FALSE;  }
 
 "xar"      { return TK_CHAR;   }
 "intero"   { return TK_INT;    }
@@ -45,6 +51,8 @@ COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 "naum"    { yylval = Atributos(yytext); return TK_NOT;   }
 
 {CSTRING}  { yylval = Atributos(yytext, Tipo("string")); return TK_CSTRING; }
+{CCHAR}    { yylval = Atributos(yytext, Tipo("char"));   return TK_CCHAR;   }
+
 {ID}       { yylval = Atributos(renomeia_variavel_usuario(yytext));
               return TK_ID;                                                 }
 {INT}      { yylval = Atributos(yytext, Tipo("int")); return TK_CINT;       }
