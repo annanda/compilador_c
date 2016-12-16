@@ -32,11 +32,14 @@ string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
 string leitura_padrao(Atributos s3);
+string gera_label(string tipo);
+string desbloquifica(string lexema);
 
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
 
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
+Atributos gera_codigo_if(Atributos expr, Atributos bloco_if, Atributos bloco_else);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -263,19 +266,27 @@ BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
         }
       ;
 
-CMDS  : CMD ';' CMDS
+SUB_BLOCO : TK_BEGIN CMDS TK_END
+            {
+              $$.codigo = "{\n";
+              $$.codigo += $2.codigo + "}\n";
+            }
+          ;
+
+CMDS  : CMD CMDS
         {
-          $$.codigo = $1.codigo + $3.codigo;
+          $$.codigo = $1.codigo + $2.codigo;
         }
       | { $$ = Atributos(); }
       ;
 
-CMD : CMD_REVELA
-    | CMD_DESCOBRE
-    | CMD_RETURN
-    | CMD_CALL
-    | ATRIB   // Atribuicoes locais
-    | VAR { $$ = $1; }    // Variaveis locais
+CMD : CMD_REVELA ';'
+    | CMD_DESCOBRE ';'
+    | CMD_RETURN ';'
+    | CMD_CALL ';'
+    | CMD_IF       // nao tem ponto e virgula
+    | ATRIB ';'   // Atribuicoes locais
+    | VAR ';'  { $$ = $1; }    // Variaveis locais
     ;
 
 // Precisa adicionar IF, WHILE, DO, FOR aqui
@@ -324,6 +335,16 @@ C_PARAMS : C_PARAMS ',' C_PARAM
 C_PARAM : TK_ID
         | TK_ID '[' E ']'
         ;
+
+CMD_IF : TK_IF '(' E ')' SUB_BLOCO
+         {
+           $$ = gera_codigo_if($3, $5, Atributos());
+         }
+       | TK_IF '(' E ')' SUB_BLOCO TK_ELSE SUB_BLOCO
+         {
+           $$ = gera_codigo_if($3, $5, $7);
+         }
+       ;
 
 E : E '+' E
     {
@@ -575,6 +596,18 @@ string leitura_padrao(Atributos s3){
   return codigo;
 }
 
+string gera_label(string tipo){
+  static int n = 0;
+  string nome = "l_" + tipo + "_" + toString(++n);
+  return nome;
+}
+
+string desbloquifica(string lexema){
+  lexema[0] = ' '; //remove {
+  lexema[lexema.size()-2] = ' '; // remove }
+  return lexema;
+}
+
 int is_atribuivel(Atributos s1, Atributos s3){
   string key = s1.tipo.tipo_base + "=" + s3.tipo.tipo_base;
   if (tipo_opr.find(key) != tipo_opr.end()){
@@ -616,6 +649,20 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   return ss;
 }
 
+Atributos gera_codigo_if(Atributos expr, Atributos bloco_if, Atributos bloco_else){
+  Atributos ss;
+  string label_else = gera_label( "else" );
+  string label_end = gera_label( "end" );
+  ss.codigo = expr.codigo +
+         "  " + expr.valor + " = !" + expr.valor + ";\n\n" +
+         "  if( " + expr.valor + " ) goto " + label_else + ";\n" +
+         desbloquifica(bloco_if.codigo) +
+         "  goto " + label_end + ";\n" +
+         label_else + ":;\n" +
+         desbloquifica(bloco_else.codigo) +
+         label_end + ":;\n";
+  return ss;
+}
 
 int main(int argc, char* argv[]){
   inicializa_operadores();

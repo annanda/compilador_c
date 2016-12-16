@@ -20,6 +20,16 @@ main {
   cadea leituras;
   descobre(leituras);
   intero li;
-  descobre(li);
+  se(li){
+    descobre(li);
+    revela("Descoberto");
+    se(li + a){
+      revela("Somou!");
+    }senao{
+      flwvlw;
+    }
+  }senao{
+    revela("Nao Descoberto");
+  }
   flwvlw 50+10+30;
 }
