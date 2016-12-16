@@ -6,10 +6,10 @@ INT     {NUMERO}+
 DOUBLE  {NUMERO}+("."{NUMERO}+)?
 ID      {LETRA}({LETRA}|{NUMERO})*
 CSTRING \"(\\.|[^\\"])*\"
-CCHAR   \'(\\.|[^\\'])?\'
+CCHAR   ['][^\n'][']
 COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
-F       "FALSE"|"false"|"False"
-T       "true"|"TRUE"|"True"
+F       "FALSIANE"|"falsiane"|"Falsiane"
+T       "verdiane"|"VERDIANE"|"Verdiane"
 
 %%
 

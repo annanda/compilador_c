@@ -31,6 +31,7 @@ string traduz_interno_para_gueto(string interno);
 string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
+string leitura_padrao(Atributos s3);
 
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
@@ -281,13 +282,30 @@ CMD : CMD_REVELA
 // Porem nao pode ser CMD pq nao tem ;
 
 CMD_REVELA : TK_WRITE '(' E ')'
+             {
+               $$.codigo = $3.codigo +
+                     "  cout << " + $3.valor + ";\n"
+                     "  cout << endl;\n";
+             }
            ;
 
-CMD_DESCOBRE : TK_READ '(' E ')'
+CMD_DESCOBRE : TK_READ '(' TK_ID ')'
+               {
+                 $3.tipo = consulta_ts($3.valor);
+                 $$.codigo = leitura_padrao($3);
+               }
              ;
 
+// tipo da pra dar flwvlw em qualquer parte do codigo
+// porem o gabarito do zimbrao aceita return em qualquer parte do codigo
 CMD_RETURN : TK_RETURN
+             {
+               $$.codigo = $1.codigo + "  return 0;\n";
+             }
            | TK_RETURN E
+             {
+               $$.codigo = $1.codigo + $2.codigo + "  return "+ $2.valor +";\n";
+             }
            ;
 
 // Definindo a call de uma funcao
@@ -530,27 +548,10 @@ string gera_nome_var_temp(string tipo_interno){
   return nome;
 }
 
-/*vector<string> split(string const & s, size_t count){
-    size_t minsize = s.size()/count;
-    int extra = s.size() - minsize * count;
-    vector<string> tokens;
-    for(size_t i = 0, offset=0 ; i < count ; ++i, --extra){
-      size_t size = minsize + (extra>0?1:0);
-      if ( (offset + size) < s.size())
-        tokens.push_back(s.substr(offset,size));
-      else
-        tokens.push_back(s.substr(offset, s.size() - offset));
-      offset += size;
-    }
-    return tokens;
-}*/
-
 string atribuicao_var(Atributos s1, Atributos s3){
   if (is_atribuivel(s1, s3) == 1){
     if (s1.tipo.tipo_base == "s"){
-      // precisa quebrar a string se for maior de 256 chars
-       //vector<string> a = split(s3.valor, s3.valor.size()/255 + 1);
-       return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", 256);\n";
+       return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", "+ toString(MAX_STRING_SIZE) + ");\n";
     } else if (s1.tipo.tipo_base == "b" && s3.tipo.tipo_base == "i") {
       string val = (s3.valor == "0" ? "0" : "1"); //lida com b=i
       return s3.codigo + "  " + s1.valor + " = " + val + ";\n";
@@ -562,6 +563,16 @@ string atribuicao_var(Atributos s1, Atributos s3){
           + traduz_interno_para_gueto(s1.tipo.tipo_base) + " = "
           + traduz_interno_para_gueto(s3.tipo.tipo_base));
   }
+}
+
+string leitura_padrao(Atributos s3){
+  string codigo;
+  if (s3.tipo.tipo_base == "s"){
+    codigo = s3.codigo + "  getline(cin, " + s3.valor +  ");\n";
+  }else{
+    codigo = s3.codigo + "  cin >> " + s3.valor +  ";\n";
+  }
+  return codigo;
 }
 
 int is_atribuivel(Atributos s1, Atributos s3){

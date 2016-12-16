@@ -11,9 +11,15 @@ main {
   xarizard = 'a';
   bul xxx;
   bul yyy;
-  xxx = False;
+  xxx = Falsiane;
   yyy = 10;
   xxx = yyy;
-  cad = "sup, bro! Isto e um comentario grande o suficiente para ultrapassar o limite de 256 caracteres que e indicado pelo nosso compilador simplesmente porque eu quero testar o que acontece quando a gente escreve algo tao grande quanto eu estou escrevendo, espero que funcione, mas se nao funcionar culparei a jullyana... hahahahhahaahaha";
-
+  cad = "sup, bro!";
+  revela(50+60+70);
+  revela("Lendo input: ");
+  cadea leituras;
+  descobre(leituras);
+  intero li;
+  descobre(li);
+  flwvlw 50+10+30;
 }
