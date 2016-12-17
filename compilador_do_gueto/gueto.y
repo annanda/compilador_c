@@ -25,9 +25,12 @@ Tipo consulta_ts(string nome);
 
 string toString(int n);
 string declara_variavel(string nome, Tipo tipo);
+
 string traduz_interno_para_C(string interno);
 string traduz_gueto_para_interno(string gueto);
 string traduz_interno_para_gueto(string interno);
+string traduz_operador_C_para_gueto(string opr_c);
+
 string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
@@ -732,6 +735,20 @@ string traduz_interno_para_gueto(string interno){
   return "";
 }
 
+string traduz_operador_C_para_gueto(string opr_c){
+  if(opr_c == "!=")
+    return "<>";
+  if(opr_c == "&&")
+    return "e";
+  if(opr_c == "||")
+    return "ou";
+  if(opr_c == "!")
+    return "naum";
+  if(opr_c == "%")
+    return "modis";
+  return opr_c;
+}
+
 string renomeia_variavel_usuario(string nome){
   return "_" + nome;
 }
@@ -818,13 +835,10 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   string tipo3 = s3.tipo.tipo_base;
   string tipo_resultado = tipo_opr[tipo1 + opr + tipo3];
 
-  // TODO(jullytta): mensagem de erro imprime o operador em C,
-  // nao em gueto. Logo, eh uma mensagem de erro ruim -
-  // o usuario teria de saber C para entende-la.
   if(tipo_resultado == "")
     erro("Operacao nao permitida. "
        + traduz_interno_para_gueto(tipo1)
-       + " " + opr + " "
+       + " " + traduz_operador_C_para_gueto(opr) + " "
        + traduz_interno_para_gueto(tipo3));
 
   ss.valor = gera_nome_var_temp(tipo_resultado);
@@ -858,7 +872,8 @@ Atributos gera_codigo_operador_unario(string opr, Atributos s2){
 
   if(tipo_resultado == "")
     erro("Operacao nao permitida. "
-       + opr + traduz_interno_para_gueto(tipo2));
+       + traduz_operador_C_para_gueto(opr)
+       + traduz_interno_para_gueto(tipo2));
 
   ss.valor = gera_nome_var_temp(tipo_resultado);
   ss.tipo = Tipo(tipo_resultado);
