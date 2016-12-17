@@ -29,7 +29,7 @@ T       "verdiane"|"VERDIANE"|"Verdiane"
 
 "{"        { yylval = Atributos(yytext); return TK_BEGIN;  }
 "}"        { yylval = Atributos(yytext); return TK_END;    }
-"main"     { yylval = Atributos(yytext); return TK_MAIN;   }
+"mano"     { yylval = Atributos(yytext); return TK_MAIN;   }
 "flwvlw"   { yylval = Atributos(yytext); return TK_RETURN; }
 "revela"   { yylval = Atributos(yytext); return TK_WRITE;  }
 "descobre" { yylval = Atributos(yytext); return TK_READ;   }

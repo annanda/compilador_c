@@ -1,5 +1,5 @@
 
-main {
+mano {
 
   intero a;
   a = 3;
