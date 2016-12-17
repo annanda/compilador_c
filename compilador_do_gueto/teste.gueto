@@ -1,8 +1,7 @@
 
 mano {
 
-  intero a;
-  a = 3;
+  intero a = 3;
   daboul b, c;
   b = 2.0;
   c = a * b;

@@ -169,14 +169,15 @@ VAR : TIPO VAR_DEFS
           insere_ts(*it, $1.tipo);
         }
       }
-    | TIPO ATRIB
+    | TIPO TK_ID TK_ATRIB E
       {
-        // Aqui podemos fazer apenas a atribuicao, uma vez que
-        // as variaveis sejam adequadamente declaradas no inicio
-        // do bloco.
-        // Problema encontrado: nao temos como saber dentro da producao
-        // de ATRIB se a variavel ja era para ter sido declarada.
-        // Provavelmente nao poderemos usar ATRIB aqui.
+        $$ = Atributos($2.valor, $1.tipo);
+        vars_bloco[vars_bloco.size()-1] += "  "
+                                        + declara_variavel($2.valor, $1.tipo)
+                                        + ";\n";
+        insere_ts($2.valor, $1.tipo);
+        $2.tipo = $1.tipo;
+        $$.codigo = atribuicao_var($2, $4);
       }
     ;
 
@@ -204,6 +205,7 @@ VAR_DEF   : TK_ID
 ATRIB : TK_ID TK_ATRIB E
         {
           $1.tipo = consulta_ts($1.valor);
+          $$.valor = $1.valor;
           $$.codigo = atribuicao_var($1, $3);
         }
       | TK_ID '[' E ']' TK_ATRIB E
