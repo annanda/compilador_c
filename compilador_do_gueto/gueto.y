@@ -39,6 +39,7 @@ int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
 
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
+Atributos gera_codigo_operador_unario(string opr, Atributos s2);
 Atributos gera_codigo_if(Atributos expr,
                          Atributos bloco_if,
                          Atributos bloco_else);
@@ -117,10 +118,12 @@ string includes =
 %token TK_E TK_AND TK_OR TK_NOT
 %token TK_FOR TK_WHILE TK_DO
 
-%left TK_AND TK_OR
+%left TK_OR
+%left TK_AND
 %nonassoc TK_G TK_L TK_GE TK_LE TK_ATRIB TK_DIFF TK_E
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' TK_MOD
+%nonassoc TK_NOT
 
 %%
 
@@ -388,6 +391,22 @@ E : E '+' E
     {
       $$ = gera_codigo_operador($1, "==", $3);
     }
+  | E TK_AND E
+    {
+      $$ = gera_codigo_operador($1, "&&", $3);
+    }
+  | E TK_OR E
+    {
+      $$ = gera_codigo_operador($1, "||", $3);
+    }
+  | E TK_MOD E
+    {
+      $$ = gera_codigo_operador($1, "%", $3);
+    }
+  | TK_NOT E
+    {
+      $$ = gera_codigo_operador_unario("!", $2);
+    }
   | '(' E ')'
     {
       $$ = $2;
@@ -557,6 +576,29 @@ void inicializa_operadores() {
   tipo_opr["s=s"] = "s";
   tipo_opr["s=c"] = "s";
 
+  // Operador e
+  tipo_opr["b&&b"] = "b";
+  tipo_opr["i&&i"] = "b";
+  tipo_opr["i&&d"] = "b";
+  tipo_opr["d&&i"] = "b";
+  tipo_opr["d&&d"] = "b";
+
+  // Operador ou
+  tipo_opr["b||b"] = "b";
+  tipo_opr["i||i"] = "b";
+  tipo_opr["i||d"] = "b";
+  tipo_opr["d||i"] = "b";
+  tipo_opr["d||d"] = "b";
+
+  // Operador naum
+  tipo_opr["!i"] = "i";
+  tipo_opr["!b"] = "b";
+  tipo_opr["!c"] = "c";
+  tipo_opr["!d"] = "d";
+
+  // Operador modis
+  tipo_opr["i%i"] = "i";
+
 }
 
 void insere_ts(string nome, Tipo tipo){
@@ -723,6 +765,9 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
 
   // TODO(jullytta): conferir se tratamos de vetores aqui,
   // ou de strings.
+  // TODO(jullytta): mensagem de erro imprime o operador em C,
+  // nao em gueto. Logo, eh uma mensagem de erro ruim -
+  // o usuario teria de saber C para entende-la.
   if(tipo_resultado == "")
     erro("Operacao nao permitida. "
        + traduz_interno_para_gueto(tipo1)
@@ -735,6 +780,27 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   ss.codigo = s1.codigo + s3.codigo
             + "  " + ss.valor + " = "
             + s1.valor + " " + opr + " " + s3.valor
+            + ";\n";
+
+  return ss;
+}
+
+Atributos gera_codigo_operador_unario(string opr, Atributos s2){
+  Atributos ss;
+
+  string tipo2 = s2.tipo.tipo_base;
+  string tipo_resultado = tipo_opr[opr + tipo2];
+
+  if(tipo_resultado == "")
+    erro("Operacao nao permitida. "
+       + opr + traduz_interno_para_gueto(tipo2));
+
+  ss.valor = gera_nome_var_temp(tipo_resultado);
+  ss.tipo = Tipo(tipo_resultado);
+
+  ss.codigo = s2.codigo + "  "
+            + ss.valor + " = "
+            + opr + s2.valor
             + ";\n";
 
   return ss;

@@ -49,6 +49,7 @@ T       "verdiane"|"VERDIANE"|"Verdiane"
 "e"       { yylval = Atributos(yytext); return TK_AND;   }
 "ou"      { yylval = Atributos(yytext); return TK_OR;    }
 "naum"    { yylval = Atributos(yytext); return TK_NOT;   }
+"modis"   { yylval = Atributos(yytext); return TK_MOD;   }
 
 {CSTRING}  { yylval = Atributos(yytext, Tipo("string")); return TK_CSTRING; }
 {CCHAR}    { yylval = Atributos(yytext, Tipo("char"));   return TK_CCHAR;   }

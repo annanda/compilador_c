@@ -13,7 +13,10 @@ main {
   bul yyy;
   xxx = Falsiane;
   yyy = (2.0 <> 2);
-  se(yyy){
+  se(a modis 3 == 0){
+    revela("a eh divisivel por 3");
+  }
+  se(naum yyy){
     revela("Parece que o jogo virou, nao eh mesmo?");
   }
   xxx = yyy;
