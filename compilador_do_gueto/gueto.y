@@ -810,6 +810,7 @@ int toInt(string valor) {
   return aux;
 }
 
+// TODO(jullytta): Operacoes com vetores
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   Atributos ss;
 
@@ -817,8 +818,6 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   string tipo3 = s3.tipo.tipo_base;
   string tipo_resultado = tipo_opr[tipo1 + opr + tipo3];
 
-  // TODO(jullytta): conferir se tratamos de vetores aqui,
-  // ou de strings.
   // TODO(jullytta): mensagem de erro imprime o operador em C,
   // nao em gueto. Logo, eh uma mensagem de erro ruim -
   // o usuario teria de saber C para entende-la.
@@ -830,11 +829,23 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
 
   ss.valor = gera_nome_var_temp(tipo_resultado);
   ss.tipo = Tipo(tipo_resultado);
+  ss.codigo = s1.codigo + s3.codigo;
 
-  ss.codigo = s1.codigo + s3.codigo
-            + "  " + ss.valor + " = "
-            + s1.valor + " " + opr + " " + s3.valor
-            + ";\n";
+  // Strings
+  // TODO(jullytta): comparacao de strings, concatenar string
+  // com int, char e double.
+  if(tipo_resultado == "s" && opr == "+"){
+    ss.codigo += "  strncpy(" + ss.valor + ", " + s1.valor + ", "
+              + toString(MAX_STRING_SIZE) + ");\n"
+              + "  strncat(" + ss.valor + ", " + s3.valor + ", "
+              + toString(MAX_STRING_SIZE) + ");\n";
+  }
+  // Tipo basico
+  else {
+    ss.codigo += "  " + ss.valor + " = "
+              + s1.valor + " " + opr + " " + s3.valor
+              + ";\n";
+  }
 
   return ss;
 }
