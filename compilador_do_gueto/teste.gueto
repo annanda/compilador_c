@@ -1,6 +1,8 @@
 
 mano {
 
+  intero arrei[10];
+
   intero a = 3;
   daboul b, c;
   b = 2.0;
@@ -12,6 +14,7 @@ mano {
 
   xar xarizard;
   xarizard = 'a';
+
   bul xxx;
   bul yyy;
   xxx = Falsiane;

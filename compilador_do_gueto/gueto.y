@@ -161,9 +161,10 @@ DECL : VAR ';' // Variaveis globais
 
 // Permite tipo var1, var2, var3 e tipo var1 = expr;
 // mas nao tipo var1 = expr, var2;
+// Arrays devem ser declarados separadamente
+// e.g. intero a[10];
 VAR : TIPO VAR_DEFS
       {
-        $$.codigo = "";
         // Os nomes das variaveis estao na lista_str de $2.
         // Cada variavel e' inserida na tabela de simbolos e
         // sua declaracao e' adicionada a lista de declaracao
@@ -187,27 +188,28 @@ VAR : TIPO VAR_DEFS
         $2.tipo = $1.tipo;
         $$.codigo = atribuicao_var($2, $4);
       }
+    | TIPO TK_ID '[' TK_CINT ']'
+      {
+        $$ = Atributos($2.valor, Tipo($1.tipo.tipo_base, toInt($4.valor)));
+        vars_bloco[vars_bloco.size()-1] += "  "
+                                        + declara_variavel($$.valor, $$.tipo)
+                                        + ";\n";
+        insere_ts($$.valor, $$.tipo);
+      }
     ;
 
 // Permite declaracoes como tipo a, b, c, d;
-VAR_DEFS  : VAR_DEF ',' VAR_DEFS
+VAR_DEFS  : TK_ID ',' VAR_DEFS
             {
               $$.lista_str.push_back($1.valor);
               $$.lista_str.insert($$.lista_str.end(),
                                   $3.lista_str.begin(),
                                   $3.lista_str.end());
             }
-          | VAR_DEF
+          | TK_ID
             {
               $$.lista_str.push_back($1.valor);
             }
-          ;
-
-VAR_DEF   : TK_ID
-            {
-              $$.valor = $1.valor;
-            }
-          | TK_ID '[' E ']'
           ;
 
 ATRIB : TK_ID TK_ATRIB E
@@ -379,7 +381,8 @@ ATRIB_FOR : TIPO TK_ID TK_ATRIB E
             {
               $$ = Atributos($2.valor, $1.tipo);
               vars_bloco[vars_bloco.size()-1] += "  "
-                                              + declara_variavel($2.valor, $1.tipo)
+                                              + declara_variavel($2.valor,
+                                                                 $1.tipo)
                                               + ";\n";
               insere_ts($2.valor, $1.tipo);
               $2.tipo = $1.tipo;
@@ -683,6 +686,9 @@ string toString(int n){
 string declara_variavel(string nome, Tipo tipo){
   if(tipo.tipo_base == "s")
     return "char " + nome + "[" + toString(MAX_STRING_SIZE) + "]";
+  if(tipo.ndim == 1)
+    return traduz_interno_para_C(tipo.tipo_base)
+            + " " + nome + "[" + toString(tipo.tam[0]) + "]";
   return traduz_interno_para_C(tipo.tipo_base) + " " + nome;
 }
 
@@ -909,7 +915,8 @@ Atributos gera_codigo_while(Atributos expr, Atributos bloco){
   Atributos ss;
   string label_teste = gera_label( "teste_while" );
   string label_end = gera_label( "fim_while" );
-  // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra verificar erros
+  // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra
+  // verificar erros
   string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
 
   ss.codigo = label_teste + ":;\n"
@@ -927,7 +934,8 @@ Atributos gera_codigo_do_while(Atributos bloco, Atributos expr){
   Atributos ss;
   string label_teste = gera_label( "teste_dowhile" );
   string label_end = gera_label( "fim_dowhile" );
-  // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra verificar erros
+  // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra
+  // verificar erros
   string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
 
   ss.codigo = label_teste + ":;\n"
