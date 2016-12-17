@@ -30,17 +30,12 @@ main {
   intero li;
   revela("Entra com um numero agora vai:");
   descobre(li);
-  se(li){
-    revela("Descoberto:");
-    revela(li);
-    se(li + a){
-      revela("Somou!");
-      revela(li + a);
-    }senao{
-      flwvlw;
-    }
-  }senao{
-    revela("Nao Descoberto");
+  intero x;
+  x = 0;
+  enquanto (x < 10){
+    x = x + 1;
+    revela("Enquanto funciona, viado!");
+    revela(x);
   }
   flwvlw 50+10+30;
 }

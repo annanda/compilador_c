@@ -43,6 +43,7 @@ Atributos gera_codigo_operador_unario(string opr, Atributos s2);
 Atributos gera_codigo_if(Atributos expr,
                          Atributos bloco_if,
                          Atributos bloco_else);
+Atributos gera_codigo_while(Atributos expr, Atributos bloco);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -290,6 +291,8 @@ CMD : CMD_REVELA ';'
     | CMD_RETURN ';'
     | CMD_CALL ';'
     | CMD_IF       // nao tem ponto e virgula
+    | CMD_FOR
+    | CMD_WHILE
     | ATRIB ';'   // Atribuicoes locais
     | VAR ';'  { $$ = $1; }    // Variaveis locais
     ;
@@ -350,6 +353,15 @@ CMD_IF : TK_IF '(' E ')' SUB_BLOCO
            $$ = gera_codigo_if($3, $5, $7);
          }
        ;
+
+CMD_FOR : TK_FOR '(' TK_INT TK_ID TK_ATRIB E ';' E ';' TK_ID TK_ATRIB E ')' SUB_BLOCO
+        ;
+
+CMD_WHILE : TK_WHILE '(' E ')' SUB_BLOCO
+            {
+              $$ = gera_codigo_while($3, $5);
+            }
+          ;
 
 E : E '+' E
     {
@@ -822,6 +834,24 @@ Atributos gera_codigo_if(Atributos expr,
             + label_else + ":;\n"
             + desbloquifica(bloco_else.codigo)
             + label_end + ":;\n";
+  return ss;
+}
+
+Atributos gera_codigo_while(Atributos expr, Atributos bloco){
+  Atributos ss;
+  string label_teste = gera_label( "teste_while" );
+  string label_end = gera_label( "fim_while" );
+  // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra verificar erros
+  string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
+
+  ss.codigo = label_teste + ":;\n"
+            + expr.codigo + "  "
+            + condicao_var + " = !" + expr.valor + ";\n\n"
+            + "if ("+ condicao_var +") goto " + label_end
+            + ";\n" + desbloquifica(bloco.codigo)
+            + "goto " + label_teste + ";\n"
+            + label_end + ":;\n"
+            ;
   return ss;
 }
 
