@@ -591,10 +591,17 @@ string atribuicao_var(Atributos s1, Atributos s3){
 
 string leitura_padrao(Atributos s3){
   string codigo;
+  // Usado para encontrar o pula linha que vem com fgets
+  // e devidamente se livrar do mesmo.
+  string indice_pula_linha = gera_nome_var_temp("i");
   if (s3.tipo.tipo_base == "s"){
     codigo = s3.codigo + "  fgets(" + s3.valor
-                       + ", "+ toString(MAX_STRING_SIZE) + ", stdin);\n";
-  }else{
+                       + ", " + toString(MAX_STRING_SIZE) + ", stdin);\n"
+                       + "  " + indice_pula_linha + " = strcspn(" + s3.valor
+                       + ", \"\\n\");\n"
+                       + "  " + s3.valor + "[" + indice_pula_linha
+                       + "] = 0;\n";
+  } else{
     codigo = s3.codigo + "  cin >> " + s3.valor +  ";\n";
   }
   return codigo;
