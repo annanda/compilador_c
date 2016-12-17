@@ -743,19 +743,19 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
 Atributos gera_codigo_if(Atributos expr,
                          Atributos bloco_if,
                         Atributos bloco_else){
-  // TODO(johncurcio): a condicao do if deve ser avaliada e
-  // guardada em uma variavel temporaria
   Atributos ss;
   string label_else = gera_label( "else" );
   string label_end = gera_label( "end" );
-  ss.codigo = expr.codigo +
-         "  " + expr.valor + " = !" + expr.valor + ";\n\n" +
-         "  if( " + expr.valor + " ) goto " + label_else + ";\n" +
-         desbloquifica(bloco_if.codigo) +
-         "  goto " + label_end + ";\n" +
-         label_else + ":;\n" +
-         desbloquifica(bloco_else.codigo) +
-         label_end + ":;\n";
+  string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
+  ss.codigo = expr.codigo + "  " + condicao_var
+            + " = !" + expr.valor + ";\n\n"
+            + "  if( " + condicao_var + " ) goto "
+            + label_else + ";\n"
+            + desbloquifica(bloco_if.codigo)
+            + "  goto " + label_end + ";\n"
+            + label_else + ":;\n"
+            + desbloquifica(bloco_else.codigo)
+            + label_end + ":;\n";
   return ss;
 }
 
