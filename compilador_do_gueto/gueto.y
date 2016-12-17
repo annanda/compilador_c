@@ -45,6 +45,10 @@ Atributos gera_codigo_if(Atributos expr,
                          Atributos bloco_else);
 Atributos gera_codigo_while(Atributos expr, Atributos bloco);
 Atributos gera_codigo_do_while(Atributos bloco, Atributos expr);
+Atributos gera_codigo_for(Atributos atrib,
+                          Atributos condicao,
+                          Atributos pulo,
+                          Atributos bloco);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -358,8 +362,36 @@ CMD_IF : TK_IF '(' E ')' SUB_BLOCO
          }
        ;
 
-CMD_FOR : TK_FOR '(' TK_INT TK_ID TK_ATRIB E ';' E ';' TK_ID TK_ATRIB E ')' SUB_BLOCO
+CMD_FOR : TK_FOR '(' ATRIB_FOR ';' E ';' PULO_FOR ')' SUB_BLOCO
+          {
+            $$ = gera_codigo_for($3, $5, $7, $9);
+          }
+        | TK_FOR '(' ';' E ';' ')' SUB_BLOCO
+          {
+            $$ = gera_codigo_while($4, $7);
+          }
         ;
+
+ATRIB_FOR : TIPO TK_ID TK_ATRIB E
+            {
+              $$ = Atributos($2.valor, $1.tipo);
+              vars_bloco[vars_bloco.size()-1] += "  "
+                                              + declara_variavel($2.valor, $1.tipo)
+                                              + ";\n";
+              insere_ts($2.valor, $1.tipo);
+              $2.tipo = $1.tipo;
+              $$.codigo = atribuicao_var($2, $4);
+            }
+          ;
+
+// acho que pra verificar tipos isso fica melhor separado!
+PULO_FOR : TK_ID TK_ATRIB E
+           {
+             $$.codigo = $3.codigo + "\n" + "  "
+                       + $1.valor + " = " + $3.valor + ";\n";
+           }
+         ;
+
 
 CMD_WHILE : TK_WHILE '(' E ')' SUB_BLOCO
             {
@@ -878,6 +910,29 @@ Atributos gera_codigo_do_while(Atributos bloco, Atributos expr){
             + condicao_var + " = !" + expr.valor + ";\n\n"
             + "if ("+ condicao_var +") goto " + label_end + ";\n"
             + "goto " + label_teste + ";\n"
+            + label_end + ":;\n"
+            ;
+  return ss;
+}
+
+Atributos gera_codigo_for(Atributos atrib,
+                          Atributos condicao,
+                          Atributos pulo,
+                          Atributos bloco){
+  Atributos ss;
+  string var_fim = gera_nome_var_temp( atrib.tipo.tipo_base );
+  string label_teste = gera_label( "teste_for" );
+  string label_end = gera_label( "fim_for" );
+  string condicao_var = gera_nome_var_temp(condicao.tipo.tipo_base);
+
+  ss.codigo = atrib.codigo
+            + label_teste + ":;\n"
+            + condicao.codigo + "  "
+            + condicao_var + " = !" + condicao.valor + ";\n\n"
+            + "if ("+ condicao_var +") goto " + label_end
+            + ";\n" + desbloquifica(bloco.codigo)
+            + pulo.codigo
+            + "  goto " + label_teste + ";\n"
             + label_end + ":;\n"
             ;
   return ss;
