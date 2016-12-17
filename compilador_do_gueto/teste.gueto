@@ -16,15 +16,20 @@ main {
   xxx = yyy;
   cad = "sup, bro!";
   revela(50+60+70);
-  revela("Lendo input: ");
+  revela("Fala que eu repito!");
   cadea leituras;
   descobre(leituras);
+  revela("Voce disse:");
+  revela(leituras);
   intero li;
+  revela("Entra com um numero agora vai:");
+  descobre(li);
   se(li){
-    descobre(li);
-    revela("Descoberto");
+    revela("Descoberto:");
+    revela(li);
     se(li + a){
       revela("Somou!");
+      revela(li + a);
     }senao{
       flwvlw;
     }

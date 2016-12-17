@@ -39,7 +39,9 @@ int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
 
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
-Atributos gera_codigo_if(Atributos expr, Atributos bloco_if, Atributos bloco_else);
+Atributos gera_codigo_if(Atributos expr,
+                         Atributos bloco_if,
+                         Atributos bloco_else);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -572,7 +574,8 @@ string gera_nome_var_temp(string tipo_interno){
 string atribuicao_var(Atributos s1, Atributos s3){
   if (is_atribuivel(s1, s3) == 1){
     if (s1.tipo.tipo_base == "s"){
-       return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", "+ toString(MAX_STRING_SIZE) + ");\n";
+       return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", "
+                        + toString(MAX_STRING_SIZE) + ");\n";
     } else if (s1.tipo.tipo_base == "b" && s3.tipo.tipo_base == "i") {
       string val = (s3.valor == "0" ? "0" : "1"); //lida com b=i
       return s3.codigo + "  " + s1.valor + " = " + val + ";\n";
@@ -650,7 +653,11 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   return ss;
 }
 
-Atributos gera_codigo_if(Atributos expr, Atributos bloco_if, Atributos bloco_else){
+Atributos gera_codigo_if(Atributos expr,
+                         Atributos bloco_if,
+                        Atributos bloco_else){
+  // TODO(johncurcio): a condicao do if deve ser avaliada e
+  // guardada em uma variavel temporaria
   Atributos ss;
   string label_else = gera_label( "else" );
   string label_end = gera_label( "end" );
