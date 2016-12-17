@@ -1,6 +1,7 @@
 all: gueto teste.gueto
 	./gueto < teste.gueto > gerado.cc
 	./../gabarito/gabarito < gerado.cc
+	g++ gerado.cc -o gerado
 
 lex.yy.c: gueto.lex
 	lex gueto.lex
