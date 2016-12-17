@@ -364,6 +364,30 @@ E : E '+' E
     {
       $$ = gera_codigo_operador($1, "/", $3);
     }
+  | E TK_G E
+    {
+      $$ = gera_codigo_operador($1, ">", $3);
+    }
+  | E TK_L E
+    {
+      $$ = gera_codigo_operador($1, "<", $3);
+    }
+  | E TK_GE E
+    {
+      $$ = gera_codigo_operador($1, ">=", $3);
+    }
+  | E TK_LE E
+    {
+      $$ = gera_codigo_operador($1, "<=", $3);
+    }
+  | E TK_DIFF E
+    {
+      $$ = gera_codigo_operador($1, "!=", $3);
+    }
+  | E TK_E E
+    {
+      $$ = gera_codigo_operador($1, "==", $3);
+    }
   | '(' E ')'
     {
       $$ = $2;
@@ -466,6 +490,62 @@ void inicializa_operadores() {
   tipo_opr["i/i"] = "i";
   tipo_opr["d/i"] = "d";
   tipo_opr["d/d"] = "d";
+
+  // TODO(jullytta): comparacao de strings
+  // Operadores: <>, ==, >, <, <=, >=
+  // Operador >
+  tipo_opr["i>i"] = "b";
+  tipo_opr["i>d"] = "b";
+  tipo_opr["d>i"] = "b";
+  tipo_opr["d>d"] = "b";
+  tipo_opr["c>c"] = "b";
+  tipo_opr["i>c"] = "b";
+  tipo_opr["c>i"] = "b";
+
+  // Operador <
+  tipo_opr["i<i"] = "b";
+  tipo_opr["i<d"] = "b";
+  tipo_opr["d<i"] = "b";
+  tipo_opr["d<d"] = "b";
+  tipo_opr["c<c"] = "b";
+  tipo_opr["i<c"] = "b";
+  tipo_opr["c<i"] = "b";
+
+  // Operador >=
+  tipo_opr["i>=i"] = "b";
+  tipo_opr["i>=d"] = "b";
+  tipo_opr["d>=i"] = "b";
+  tipo_opr["d>=d"] = "b";
+  tipo_opr["c>=c"] = "b";
+  tipo_opr["i>=c"] = "b";
+  tipo_opr["c>=i"] = "b";
+
+  // Operador <=
+  tipo_opr["i<=i"] = "b";
+  tipo_opr["i<=d"] = "b";
+  tipo_opr["d<=i"] = "b";
+  tipo_opr["d<=d"] = "b";
+  tipo_opr["c<=c"] = "b";
+  tipo_opr["i<=c"] = "b";
+  tipo_opr["c<=i"] = "b";
+
+  // Operador ==
+  tipo_opr["i==i"] = "b";
+  tipo_opr["i==d"] = "b";
+  tipo_opr["d==i"] = "b";
+  tipo_opr["d==d"] = "b";
+  tipo_opr["c==c"] = "b";
+  tipo_opr["i==c"] = "b";
+  tipo_opr["c==i"] = "b";
+
+  // Operador <>
+  tipo_opr["i!=i"] = "b";
+  tipo_opr["i!=d"] = "b";
+  tipo_opr["d!=i"] = "b";
+  tipo_opr["d!=d"] = "b";
+  tipo_opr["c!=c"] = "b";
+  tipo_opr["i!=c"] = "b";
+  tipo_opr["c!=i"] = "b";
 
   // Operador =
   tipo_opr["i=i"] = "i";

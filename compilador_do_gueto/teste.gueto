@@ -12,7 +12,10 @@ main {
   bul xxx;
   bul yyy;
   xxx = Falsiane;
-  yyy = 10;
+  yyy = (2.0 <> 2);
+  se(yyy){
+    revela("Parece que o jogo virou, nao eh mesmo?");
+  }
   xxx = yyy;
   cad = "sup, bro!";
   revela(50+60+70);
