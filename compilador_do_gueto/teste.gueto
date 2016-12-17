@@ -37,5 +37,12 @@ mano {
     revela("Enquanto funciona, viado!");
     revela(x);
   }
+  intero h;
+  h = 10;
+  fassa{
+    h = h-1;
+    revela("Do while funciona!");
+    revela(h);
+  }enquanto(h > 0);
   flwvlw 50+10+30;
 }
