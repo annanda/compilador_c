@@ -589,7 +589,8 @@ string atribuicao_var(Atributos s1, Atributos s3){
 string leitura_padrao(Atributos s3){
   string codigo;
   if (s3.tipo.tipo_base == "s"){
-    codigo = s3.codigo + "  getline(cin, " + s3.valor +  ");\n";
+    codigo = s3.codigo + "  fgets(" + s3.valor
+                       + ", "+ toString(MAX_STRING_SIZE) + ", stdin);\n";
   }else{
     codigo = s3.codigo + "  cin >> " + s3.valor +  ";\n";
   }
