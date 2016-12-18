@@ -53,6 +53,9 @@ Atributos gera_codigo_for(Atributos atrib,
                           Atributos condicao,
                           Atributos pulo,
                           Atributos bloco);
+Atributos gera_codigo_casos(Atributos expr,
+                            Atributos cmds, int tem_break);
+Atributos gera_codigo_switch(Atributos cond, Atributos bloco);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -60,7 +63,11 @@ map<string, Tipo> ts;
 vector<string> vars_bloco;
 // Faz o mapeamento dos tipos dos operadores
 map<string, string> tipo_opr;
-
+// label de break do switch
+string label_break = gera_label("break");
+string label_passthrough = "";
+// Compara o valor do switch com o valor do case
+string compara_switch_var = "tb_0";
 
 struct Tipo {
   string tipo_base;
@@ -106,8 +113,6 @@ struct Atributos {
   }
 };
 
-
-
 string includes =
     "#include <iostream>\n"
     "#include <stdio.h>\n"
@@ -127,6 +132,7 @@ string includes =
 %token TK_G TK_L TK_GE TK_LE TK_DIFF TK_IF TK_ELSE
 %token TK_E TK_AND TK_OR TK_NOT
 %token TK_FOR TK_WHILE TK_DO
+%token TK_SWITCH TK_CASE TK_BREAK TK_DEFAULT
 
 %left TK_OR
 %left TK_AND
@@ -170,6 +176,7 @@ VAR : TIPO VAR_DEFS
         // Cada variavel e' inserida na tabela de simbolos e
         // sua declaracao e' adicionada a lista de declaracao
         // do bloco atual, que so sera impressa no inicio do bloco.
+        compara_switch_var = gera_nome_var_temp("b");
         for(vector<string>::iterator it = $2.lista_str.begin();
                                      it != $2.lista_str.end();
                                      it++){
@@ -181,6 +188,7 @@ VAR : TIPO VAR_DEFS
       }
     | TIPO TK_ID TK_ATRIB E
       {
+        compara_switch_var = gera_nome_var_temp("b");
         $$ = Atributos($2.valor, $1.tipo);
         vars_bloco[vars_bloco.size()-1] += "  "
                                         + declara_variavel($2.valor, $1.tipo)
@@ -312,6 +320,7 @@ CMD : CMD_REVELA ';'
     | CMD_IF       // nao tem ponto e virgula
     | CMD_FOR
     | CMD_WHILE
+    | CMD_SWITCH
     | CMD_DO_WHILE ';'
     | ATRIB ';'   // Atribuicoes locais
     | VAR ';'  { $$ = $1; }    // Variaveis locais
@@ -417,6 +426,52 @@ CMD_DO_WHILE : TK_DO SUB_BLOCO TK_WHILE '(' E ')'
                  $$ = gera_codigo_do_while($2, $5);
                }
               ;
+
+CMD_SWITCH : TK_SWITCH '(' E ')' BLOCO_SWITCH
+             {
+               $3.tipo = consulta_ts($3.valor);
+               $$.codigo = atribuicao_var(Atributos(compara_switch_var, $3.tipo.tipo_base), $3);
+               $$.codigo += gera_codigo_switch($3, $5).codigo;
+             }
+           ;
+
+BLOCO_SWITCH : TK_BEGIN CASOS TK_END
+               {
+                 $$.codigo += $2.codigo + "\n";
+               }
+             ;
+
+CASOS : CASO CASOS
+        {
+          $$.codigo = $1.codigo + $2.codigo;
+          $$.valor = $1.valor + $2.valor; //sobe o padrao
+        }
+      | CASO_PADRAO
+      |
+        {
+          $$ = Atributos();
+        }
+      ;
+
+CASO : TK_CASE F ':' CMDS
+       {
+         $$ = gera_codigo_casos($2, $4, 0);
+       }
+     | TK_CASE F ':' CMDS TK_BREAK ';'
+       {
+         $$ = gera_codigo_casos($2, $4, 1);
+       }
+     ;
+
+CASO_PADRAO : TK_DEFAULT ':' CMDS
+              {
+                $$ = $3;
+              }
+            | TK_DEFAULT ':' CMDS TK_BREAK ';'
+              {
+                $$ = $3; // sobe o padrao para ele ser o ultimo
+              }
+            ;
 
 E : E '+' E
     {
@@ -1002,6 +1057,49 @@ Atributos gera_codigo_for(Atributos atrib,
             + "  goto " + label_teste + ";\n"
             + label_end + ":;\n"
             ;
+  return ss;
+}
+
+Atributos gera_codigo_casos(Atributos expr,
+                            Atributos cmds, int tem_break){
+  Atributos expr_if;
+  Atributos expr_else = Atributos();
+  string switch_var = gera_nome_var_temp(expr.tipo.tipo_base);
+  expr_if.codigo = "  " + switch_var + " = "
+                 + compara_switch_var + " == " + expr.valor + ";\n";
+  expr_if.tipo = Tipo("b");
+  expr_if.valor = switch_var;
+  Atributos bloco = cmds;
+
+  Atributos ss;
+  string label_case = gera_label("else_case");
+  string condicao_var = gera_nome_var_temp("b"); //deveria ser so boolean?
+
+  string goto_break = (tem_break == 1 ? "  goto " + label_break + ";\n" : "");
+
+  ss.codigo = "\n\n"+expr_if.codigo + "  "
+            + condicao_var + " = !" + expr_if.valor + ";\n\n"
+            + "  if( " + condicao_var + " ) goto "
+            + label_case + ";\n"
+            + label_passthrough
+            + (label_passthrough == "" ? "" : ":;\n")
+            + bloco.codigo
+            + goto_break;
+  label_passthrough = gera_label("passthrough");
+  ss.codigo += "  goto " + label_passthrough + ";\n"
+            + label_case + ":;\n";
+  return ss;
+}
+
+Atributos gera_codigo_switch(Atributos cond, Atributos bloco){
+  Atributos ss;
+  compara_switch_var = gera_nome_var_temp("b");
+  string label_inutil = label_passthrough
+                      + (label_passthrough == "" ? "" : ":;\n");
+  ss.codigo = cond.codigo + bloco.codigo
+            + label_inutil + label_break + ":;\n";
+  label_break = gera_label("break");
+  label_passthrough = "";
   return ss;
 }
 

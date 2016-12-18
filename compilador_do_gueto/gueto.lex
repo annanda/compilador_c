@@ -9,7 +9,7 @@ CSTRING \"(\\.|[^\\"])*\"
 CCHAR   ['][^\n'][']
 COMMENT "/*"([^*]|\*+[^*/])*\*+"/"
 F       "FALSIANE"|"falsiane"|"Falsiane"
-T       "verdiane"|"VERDIANE"|"Verdiane"
+T       "verdadeiriane"|"VERDADEIRIANE"|"Verdadeiriane"
 
 %%
 
@@ -38,6 +38,10 @@ T       "verdiane"|"VERDIANE"|"Verdiane"
 "pra"      { yylval = Atributos(yytext); return TK_FOR;    }
 "enquanto" { yylval = Atributos(yytext); return TK_WHILE;  }
 "fassa"    { yylval = Atributos(yytext); return TK_DO;     }
+"qqtuqr"   { yylval = Atributos(yytext); return TK_SWITCH; }
+"cabou"    { yylval = Atributos(yytext); return TK_BREAK;  }
+"essi"     { yylval = Atributos(yytext); return TK_CASE;   }
+"padraum"  { yylval = Atributos(yytext); return TK_DEFAULT;}
 
 "="       { yylval = Atributos(yytext); return TK_ATRIB; }
 "<="      { yylval = Atributos(yytext); return TK_LE;    }
