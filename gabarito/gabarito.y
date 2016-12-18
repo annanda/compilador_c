@@ -9,6 +9,7 @@ int yylex();
 void yyerror( const char* st );
 
 #define YYSTYPE string
+#define  YYINITDEPTH 1000
 %}
 
 %token TK_MAIN TK_ID TK_VALOR TK_IF TK_GOTO TK_RETURN TK_INT TK_CHAR 
