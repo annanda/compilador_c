@@ -46,6 +46,7 @@ string testa_limites_matriz(Atributos id,
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
 
+Atributos acessa_array(Atributos id, Atributos indice);
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
 Atributos gera_codigo_operador_unario(string opr, Atributos s2);
 Atributos gera_codigo_if(Atributos expr,
@@ -574,11 +575,7 @@ F : TK_ID
     }
   | TK_ID '[' E ']'
     {
-      $$.tipo = Tipo(consulta_ts($1.valor).tipo_base);
-      $$.valor = gera_nome_var_temp($$.tipo.tipo_base);
-      $$.codigo = $3.codigo + testa_limites_array($1, $3)
-                + "  " + $$.valor + " = " + $1.valor
-                + "[" + $3.valor + "];\n";
+      $$ = acessa_array($1, $3);
     }
   | TK_ID '[' E ']' '[' E ']'
     {
@@ -908,9 +905,6 @@ string gera_nome_var_temp(string tipo_interno){
   return nome;
 }
 
-// TODO(jullytta): criar funcao semelhante a essa para atribuicao
-// de array. Tambem vamos precisar de uma funcao que acessa array.
-// + funcoes equivalentes para array de duas dimensoes
 string atribuicao_var(Atributos s1, Atributos s3){
   // Verifica se estamos trabalhando com dimensao zero
   // como era esperado se chamamos essa funcao.
@@ -937,6 +931,7 @@ string atribuicao_var(Atributos s1, Atributos s3){
   }
 }
 
+// TODO(jullytta): Lidar com strings
 string atribuicao_array(Atributos id, Atributos index, Atributos resultado){
   return index.codigo + resultado.codigo
             + testa_limites_array(id, index)
@@ -1022,6 +1017,19 @@ int toInt(string valor) {
   if( sscanf( valor.c_str(), "%d", &aux ) != 1 )
     erro( "Numero invalido: " + valor );
   return aux;
+}
+
+// TODO(jullytta): Lidar com strings
+Atributos acessa_array(Atributos id, Atributos indice){
+  Atributos ss;
+
+  ss.tipo = Tipo(consulta_ts(id.valor).tipo_base);
+  ss.valor = gera_nome_var_temp(ss.tipo.tipo_base);
+  ss.codigo = indice.codigo + testa_limites_array(id, indice)
+            + "  " + ss.valor + " = " + id.valor
+            + "[" + indice.valor + "];\n";
+
+  return ss;
 }
 
 // TODO(jullytta): Operacoes com vetores
