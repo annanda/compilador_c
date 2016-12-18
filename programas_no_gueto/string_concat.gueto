@@ -1,0 +1,26 @@
+cadea formata(cadea a, cadea b) {
+   se(a > b) {
+      flwvlw "Sr(a). " + a + " " + b;
+   }
+   senao {
+      flwvlw "Mr(s). " + b + ", " + a;
+   }
+}
+
+mano {
+   cadea nomes[2];
+
+   revela("Digite o seu nome: ");
+   descobre(nomes[0]);
+
+   revela("Digite o seu sobrenome: ");
+   descobre(nomes[1]);
+
+   revela("");
+
+   revela("Bom dia, " + formata(nomes[0], nomes[1]));
+   revela("Bom dia, " + formata(" " + nomes[0], nomes[1]));
+   revela("Bom dia, " + formata(nomes[0], " " + nomes[1]));
+
+   flwvlw;
+}
