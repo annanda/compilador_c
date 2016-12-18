@@ -665,13 +665,8 @@ F : TK_ID
     }
   | TK_CSTRING
     {
-      // Nao e' interessante ter strings constantes ja que
-      // nao podemos fazer operacoes char a char com elas.
-      // Todas as strings sao atribuidas a uma temporaria.
-      string v = gera_nome_var_temp("s");
-      $$ = Atributos(v, Tipo("s"));
-      $$.codigo = "  strncpy(" + v + ", " + $1.valor + ", "
-                + toString(MAX_STRING_SIZE) + ");\n";
+      $$ = Atributos($1.valor, Tipo("s"));
+      $$.codigo = $1.codigo;
     }
   | BOOL
   ;
@@ -1011,8 +1006,10 @@ string atribuicao_array(Atributos id,
                         Atributos indice,
                         Atributos resultado){
   Tipo t_array(consulta_ts(id.valor).tipo_base);
-  if(t_array.tipo_base == "s")
+  if(t_array.tipo_base == "s"){
+    cerr << "Atribuindo " << id.valor << endl;
     return gera_codigo_atribuicao_string(id, indice, resultado);
+  }
 
   return indice.codigo + resultado.codigo
             + testa_limites_array(id, indice)
@@ -1023,7 +1020,11 @@ string atribuicao_array(Atributos id,
 string gera_codigo_atribuicao_string(Atributos id,
                                      Atributos indice,
                                      Atributos resultado){
+  string a_copiar = gera_nome_var_temp("s");
+
   string codigo = indice.codigo + resultado.codigo;
+  codigo += "  strncpy(" + a_copiar + ", " + resultado.valor + ", "
+            + toString(MAX_STRING_SIZE) + ");\n";
 
   string label_teste = gera_label("teste_substring");
   string label_fim = gera_label("fim_substring");
@@ -1057,7 +1058,7 @@ string gera_codigo_atribuicao_string(Atributos id,
   // A copia de fato acontece aqui
   codigo += "  " + indice_loop_menos_inicio + " = " + indice_loop
          + " - " + inicio + ";\n"
-         + "  " + char_copiado + " = " + resultado.valor + "["
+         + "  " + char_copiado + " = " + a_copiar + "["
          + indice_loop_menos_inicio + "];\n"
          + "  " + id.valor + "[" + indice_loop + "] = "
          + char_copiado + ";\n"
