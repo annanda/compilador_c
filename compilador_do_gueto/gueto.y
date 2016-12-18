@@ -34,6 +34,7 @@ string traduz_operador_C_para_gueto(string opr_c);
 
 string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
+string gera_nome_var_temp_sem_declarar(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
 string atribuicao_array(Atributos id, Atributos index, Atributos resultado);
 string leitura_padrao(Atributos s3);
@@ -82,7 +83,7 @@ map< string, vector<string> > tipo_expr;
 string label_break = gera_label("break");
 string label_passthrough = "";
 // Compara o valor do switch com o valor do case
-string compara_switch_var = "tb_0";
+string compara_switch_var = gera_nome_var_temp_sem_declarar("b");
 
 struct Tipo {
   string tipo_base;
@@ -189,16 +190,16 @@ DECL : GLOBAL_VAR ';' // Variaveis globais
      ;
 
 // nao dava para usar o VAR pq ta declarando so coisa no bloco
-GLOBAL_VAR : TIPO TK_ID
+GLOBAL_VAR : TIPO NOME_VAR
              {
                $$ =  atribuicao_var_global($1, $2, "", "");
                $2.tipo = $1.tipo;
              }
-           | TIPO TK_ID '[' TK_CINT ']'
+           | TIPO NOME_VAR '[' TK_CINT ']'
              {
                $$ =  atribuicao_var_global($1, $2, $4.valor, "");
              }
-           | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
+           | TIPO NOME_VAR '[' TK_CINT ']' '[' TK_CINT ']'
              {
                $$ =  atribuicao_var_global($1, $2, $4.valor, $7.valor);
              }
@@ -270,7 +271,8 @@ VAR_DEFS  : NOME_VAR ',' VAR_DEFS
 NOME_VAR : TK_ID
            {
              // pro switch funcionar eu fiz isto!
-             compara_switch_var = gera_nome_var_temp("b");
+             //compara_switch_var = gera_nome_var_temp("b");
+             //$$.codigo = declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
            }
          ;
 
@@ -361,6 +363,7 @@ BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
           // Adiciona as variaveis desse bloco ao inicio do mesmo e
           // desempilha a lista de variaveis desse bloco.
           $$.codigo += vars_bloco[vars_bloco.size()-1];
+          $$.codigo += "  "+ declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
           vars_bloco.pop_back();
           $$.codigo += $3.codigo + "}\n";
         }
@@ -953,13 +956,18 @@ string renomeia_variavel_usuario(string nome){
 }
 
 string gera_nome_var_temp(string tipo_interno){
-  static int n = 1;
-  string nome = "t" + tipo_interno + "_" + toString(n++);
+  string nome = gera_nome_var_temp_sem_declarar(tipo_interno);
 
   vars_bloco[vars_bloco.size()-1] += "  "
                                   + declara_variavel(nome, Tipo(tipo_interno))
                                   + ";\n";
 
+  return nome;
+}
+
+string gera_nome_var_temp_sem_declarar(string tipo_interno){
+  static int n = 1;
+  string nome = "t" + tipo_interno + "_" + toString(n++);
   return nome;
 }
 
@@ -1325,6 +1333,7 @@ Atributos atribuicao_var_global(Atributos tipo, Atributos id,
   vars_globais[vars_globais.size()-1] += declara_variavel(ss.valor, ss.tipo)
                                       + ";\n";
   insere_ts(ss.valor, ss.tipo);
+  ss.codigo = id.codigo;
   return ss;
 }
 
