@@ -36,10 +36,13 @@ string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string gera_nome_var_temp_sem_declarar(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
-string atribuicao_array(Atributos id, Atributos index, Atributos resultado);
-string gera_codigo_substring(Atributos id,
-                            Atributos indice,
-                            Atributos resultado);
+string atribuicao_array(Atributos id,
+                        Atributos indice,
+                        Atributos resultado);
+string gera_codigo_atribuicao_string(Atributos id,
+                                     Atributos indice,
+                                     Atributos resultado);
+string gera_codigo_acesso_string(Atributos id, Atributos indice, string nome);
 string leitura_padrao(Atributos s3);
 string gera_label(string tipo);
 string desbloquifica(string lexema);
@@ -260,12 +263,12 @@ VAR : TIPO VAR_DEFS
     ;
 
 // Permite declaracoes como tipo a, b, c, d;
-VAR_DEFS  : NOME_VAR ',' VAR_DEFS
+VAR_DEFS  : VAR_DEFS ',' NOME_VAR
             {
-              $$.lista_str.push_back($1.valor);
+              $$.lista_str.push_back($3.valor);
               $$.lista_str.insert($$.lista_str.end(),
-                                  $3.lista_str.begin(),
-                                  $3.lista_str.end());
+                                  $1.lista_str.begin(),
+                                  $1.lista_str.end());
             }
           | NOME_VAR
             {
@@ -668,8 +671,7 @@ F : TK_ID
     }
   | TK_CSTRING
     {
-      $$.valor = $1.valor;
-      $$.tipo = Tipo("s");
+      $$ = Atributos($1.valor, Tipo("s"));
       $$.codigo = $1.codigo;
     }
   | BOOL
@@ -1006,22 +1008,27 @@ string atribuicao_var(Atributos s1, Atributos s3){
   }
 }
 
-// TODO(jullytta): Lidar com strings
-string atribuicao_array(Atributos id, Atributos index, Atributos resultado){
+string atribuicao_array(Atributos id,
+                        Atributos indice,
+                        Atributos resultado){
   Tipo t_array(consulta_ts(id.valor).tipo_base);
   if(t_array.tipo_base == "s")
-    return gera_codigo_substring(id, index, resultado);
+    return gera_codigo_atribuicao_string(id, indice, resultado);
 
-  return index.codigo + resultado.codigo
-            + testa_limites_array(id, index)
-            + "  " + id.valor + "[" + index.valor + "] = "
+  return indice.codigo + resultado.codigo
+            + testa_limites_array(id, indice)
+            + "  " + id.valor + "[" + indice.valor + "] = "
             + resultado.valor + ";\n";
 }
 
-string gera_codigo_substring(Atributos id,
-                            Atributos indice,
-                            Atributos resultado){
+string gera_codigo_atribuicao_string(Atributos id,
+                                     Atributos indice,
+                                     Atributos resultado){
+  string a_copiar = gera_nome_var_temp("s");
+
   string codigo = indice.codigo + resultado.codigo;
+  codigo += "  strncpy(" + a_copiar + ", " + resultado.valor + ", "
+            + toString(MAX_STRING_SIZE) + ");\n";
 
   string label_teste = gera_label("teste_substring");
   string label_fim = gera_label("fim_substring");
@@ -1055,9 +1062,58 @@ string gera_codigo_substring(Atributos id,
   // A copia de fato acontece aqui
   codigo += "  " + indice_loop_menos_inicio + " = " + indice_loop
          + " - " + inicio + ";\n"
-         + "  " + char_copiado + " = " + resultado.valor + "["
+         + "  " + char_copiado + " = " + a_copiar + "["
          + indice_loop_menos_inicio + "];\n"
          + "  " + id.valor + "[" + indice_loop + "] = "
+         + char_copiado + ";\n"
+         + "  " + indice_loop + " = " + indice_loop + " + 1;\n"
+         + "goto " + label_teste + ";\n";
+
+  codigo += label_fim + ":;\n";
+
+  return codigo;
+}
+
+string gera_codigo_acesso_string(Atributos id,
+                                 Atributos indice,
+                                 string nome){
+  string codigo = indice.codigo;
+
+  string label_teste = gera_label("teste_substring");
+  string label_fim = gera_label("fim_substring");
+
+  string condicao = gera_nome_var_temp("b");
+  string inicio = gera_nome_var_temp("i");
+  string fim = gera_nome_var_temp("i");
+
+  string indice_mais_um = gera_nome_var_temp("i");
+  string indice_loop = gera_nome_var_temp("i");
+  string indice_loop_menos_inicio = gera_nome_var_temp("i");
+
+  string char_copiado = gera_nome_var_temp("c");
+
+  // Inicializa inicio e fim
+  codigo += "  " + inicio + " = " + toString(MAX_STRING_SIZE)
+         + " * " + indice.valor + ";\n"
+         + "  " + indice_mais_um + " = " + indice.valor + " + 1;\n"
+         + "  " + fim + " = " + toString(MAX_STRING_SIZE)
+         + " * " + indice_mais_um + ";\n";
+
+  // Inicializa o indice do loop
+  codigo += "  " + indice_loop + " = " + inicio + ";\n";
+
+  // Cria o teste se ainda estamos no loop
+  codigo += label_teste + ":;\n"
+         + "  " + condicao + " = " + indice_loop + " < " + fim + ";\n"
+         + "  " + condicao + " = !" + condicao + ";\n"
+         + "  if(" + condicao + ") goto " + label_fim + ";\n";
+
+  // A copia de fato acontece aqui
+  codigo += "  " + indice_loop_menos_inicio + " = " + indice_loop
+         + " - " + inicio + ";\n"
+         + "  " + char_copiado + " = " + id.valor + "["
+         + indice_loop + "];\n"
+         + "  " + nome + "[" + indice_loop_menos_inicio + "] = "
          + char_copiado + ";\n"
          + "  " + indice_loop + " = " + indice_loop + " + 1;\n"
          + "goto " + label_teste + ";\n";
@@ -1158,15 +1214,17 @@ int aceita_tipo(string opr, Atributos expr){
   return 0;
 }
 
-// TODO(jullytta): Lidar com strings
 Atributos acessa_array(Atributos id, Atributos indice){
   Atributos ss;
 
   ss.tipo = Tipo(consulta_ts(id.valor).tipo_base);
   ss.valor = gera_nome_var_temp(ss.tipo.tipo_base);
-  ss.codigo = indice.codigo + testa_limites_array(id, indice)
-            + "  " + ss.valor + " = " + id.valor
-            + "[" + indice.valor + "];\n";
+  if(ss.tipo.tipo_base == "s")
+    ss.codigo = gera_codigo_acesso_string(id, indice, ss.valor);
+  else
+    ss.codigo = indice.codigo + testa_limites_array(id, indice)
+              + "  " + ss.valor + " = " + id.valor
+              + "[" + indice.valor + "];\n";
 
   return ss;
 }
