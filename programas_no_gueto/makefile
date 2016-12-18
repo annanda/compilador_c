@@ -1,11 +1,11 @@
 PROGRAM="relou_mundo"
 
-bin/${PROGRAM}:	src
+bin/${PROGRAM}:	bin src
 	./../compilador_do_gueto/gueto < ${PROGRAM}.gueto > src/${PROGRAM}.cc
 	./../gabarito/gabarito < src/${PROGRAM}.cc
 	g++ -o bin/${PROGRAM} src/${PROGRAM}.cc
 
-run:	bin ./bin/${PROGRAM}
+run:	./bin/${PROGRAM}
 	./bin/${PROGRAM}
 
 bin:
