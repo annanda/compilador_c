@@ -74,6 +74,7 @@ Atributos atribuicao_var_global(Atributos tipo,
                                 Atributos id,
                                 string i,
                                 string j);
+Atributos gera_codigo_operador_in(Atributos var, Atributos vetor);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -155,12 +156,13 @@ string includes =
 %token TK_E TK_AND TK_OR TK_NOT
 %token TK_FOR TK_WHILE TK_DO
 %token TK_SWITCH TK_CASE TK_BREAK TK_DEFAULT
+%token TK_IN
 
 %left TK_OR
 %left TK_AND
 %nonassoc TK_G TK_L TK_GE TK_LE TK_ATRIB TK_DIFF TK_E
 %left '+' '-'
-%left '*' '/' TK_MOD
+%left '*' '/' TK_MOD TK_IN
 %nonassoc TK_NOT
 
 %%
@@ -599,6 +601,10 @@ E : E '+' E
   | E TK_OR E
     {
       $$ = gera_codigo_operador($1, "||", $3);
+    }
+  | E TK_IN F
+    {
+      $$ = gera_codigo_operador_in($1, $3);
     }
   | E TK_MOD E
     {
@@ -1448,6 +1454,49 @@ Atributos atribuicao_var_global(Atributos tipo, Atributos id,
                                       + ";\n";
   insere_ts(ss.valor, ss.tipo);
   ss.codigo = id.codigo;
+  return ss;
+}
+
+Atributos gera_codigo_operador_in(Atributos var, Atributos vetor){
+  Atributos ss;
+  if (is_atribuivel(var, vetor)){ //faz sentido x in tab
+    if (vetor.tipo.ndim > 0){
+      string resultado = gera_nome_var_temp("b");
+      string vetor_tmp = gera_nome_var_temp(vetor.tipo.tipo_base);
+      ss.tipo = Tipo("b");
+      int tam_x = (vetor.tipo.ndim == 1
+                ? vetor.tipo.tam[0]
+                : vetor.tipo.tam[0]*vetor.tipo.tam[1]);
+      string label_in = gera_label( "in" );
+      int indice = 0;
+      ss.codigo = "\n\n  " + resultado + " = 0;\n";
+      for (int i = 0; i < tam_x; i++){
+          string valor_vetor = vetor.valor + "["+ toString(i) +"]";
+          string label_not_in = gera_label( "not_in" );
+          string tmp_var = gera_nome_var_temp(var.tipo.tipo_base);
+          ss.codigo += var.codigo + vetor.codigo +
+                    + "  " + vetor_tmp + " = " + valor_vetor + ";\n"
+                    + "  " + tmp_var + " = " + var.valor
+                    + " == " + vetor_tmp + ";\n"
+                    + "  " + tmp_var + " = !" + tmp_var + ";\n"
+                    + "  if ("+ tmp_var +") goto " + label_not_in + ";\n"
+                    + "    " + resultado + " = 1;\n"
+                    + "  goto " + label_in + ";\n"
+                    + label_not_in + ":;\n\n"
+                    ;
+      }
+      ss.codigo += label_in + ":;\n";
+      ss.valor = resultado;
+    }else{
+      erro("Esperado arrei porem encontrado ["
+           +traduz_interno_para_gueto(vetor.tipo.tipo_base)+"]");
+    }
+  }else{
+    erro("Tipo ["+traduz_interno_para_gueto(var.tipo.tipo_base)
+         +"] nao compativel com ["+
+         traduz_interno_para_gueto(vetor.tipo.tipo_base)
+         +"] para o operador 'em'");
+  }
   return ss;
 }
 

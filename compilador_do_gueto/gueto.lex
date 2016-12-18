@@ -42,6 +42,7 @@ T       "verdadeiriane"|"VERDADEIRIANE"|"Verdadeiriane"
 "cabou"    { yylval = Atributos(yytext); return TK_BREAK;  }
 "essi"     { yylval = Atributos(yytext); return TK_CASE;   }
 "padraum"  { yylval = Atributos(yytext); return TK_DEFAULT;}
+"em"       { yylval = Atributos(yytext); return TK_IN;     }
 
 "="       { yylval = Atributos(yytext); return TK_ATRIB; }
 "<="      { yylval = Atributos(yytext); return TK_LE;    }
