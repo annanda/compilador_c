@@ -35,6 +35,7 @@ string traduz_operador_C_para_gueto(string opr_c);
 string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
+string atribuicao_array(Atributos id, Atributos index, Atributos resultado);
 string leitura_padrao(Atributos s3);
 string gera_label(string tipo);
 string desbloquifica(string lexema);
@@ -47,6 +48,7 @@ int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
 int aceita_tipo(string opr, Atributos expr);
 
+Atributos acessa_array(Atributos id, Atributos indice);
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
 Atributos gera_codigo_operador_unario(string opr, Atributos s2);
 Atributos gera_codigo_if(Atributos expr,
@@ -246,25 +248,21 @@ ATRIB : TK_ID TK_ATRIB E
         }
       | TK_ID '[' E ']' TK_ATRIB E
         {
-          $$.codigo = $3.codigo + $6.codigo
-                    + testa_limites_array($1, $3)
-                    + "  " + $1.valor + "[" + $3.valor + "] = "
-                    + $6.valor + ";\n";
+          $$.codigo = atribuicao_array($1, $3, $6);
         }
       | TK_ID '[' E ']' '[' E ']' TK_ATRIB E
         {
           // Chama o teste de limites antes de mais nada.
           string teste_limites = testa_limites_matriz($1, $3, $6);
           string indice_temp = gera_nome_var_temp("i");
-          string multi_temp = gera_nome_var_temp("i");
 
           Tipo t_matriz = consulta_ts($1.valor);
 
           $$.codigo = $3.codigo + $6.codigo + $9.codigo
-                    + "  " + multi_temp + " = " + $3.valor + "*"
+                    + "  " + indice_temp + " = " + $3.valor + "*"
                     + toString(t_matriz.tam[1]) + ";\n"
                     + "  " + indice_temp + " = "
-                    + multi_temp + " + " + $6.valor + ";\n"
+                    + indice_temp + " + " + $6.valor + ";\n"
                     + teste_limites
                     + "  " + $1.valor + "[" + indice_temp
                     + "] = " + $9.valor + ";\n";
@@ -288,7 +286,7 @@ TIPO  : TK_INT
         }
       | TK_STRING
         {
-          Tipo t("s", MAX_STRING_SIZE);
+          Tipo t("s");
           $$ = Atributos("char[]", t);
         }
       | TK_BOOL
@@ -465,7 +463,9 @@ CMD_DO_WHILE : TK_DO SUB_BLOCO TK_WHILE '(' E ')'
 CMD_SWITCH : TK_SWITCH '(' E ')' BLOCO_SWITCH
              {
                $3.tipo = consulta_ts($3.valor);
-               $$.codigo = atribuicao_var(Atributos(compara_switch_var, $3.tipo.tipo_base), $3);
+               $$.codigo = atribuicao_var(Atributos(compara_switch_var,
+                                                    $3.tipo.tipo_base),
+                                                    $3);
                $$.codigo += gera_codigo_switch($3, $5).codigo;
              }
            ;
@@ -579,18 +579,13 @@ F : TK_ID
     }
   | TK_ID '[' E ']'
     {
-      $$.tipo = Tipo(consulta_ts($1.valor).tipo_base);
-      $$.valor = gera_nome_var_temp($$.tipo.tipo_base);
-      $$.codigo = $3.codigo + testa_limites_array($1, $3)
-                + "  " + $$.valor + " = " + $1.valor
-                + "[" + $3.valor + "];\n";
+      $$ = acessa_array($1, $3);
     }
   | TK_ID '[' E ']' '[' E ']'
     {
       // Chama o teste de limites antes de mais nada.
       string teste_limites = testa_limites_matriz($1, $3, $6);
       string indice_temp = gera_nome_var_temp("i");
-      string multi_temp = gera_nome_var_temp("i");
 
       Tipo t_matriz = consulta_ts($1.valor);
 
@@ -598,10 +593,10 @@ F : TK_ID
       $$.valor = gera_nome_var_temp($$.tipo.tipo_base);
 
       $$.codigo = $3.codigo + $6.codigo + teste_limites
-                + "  " + multi_temp + " = " + $3.valor + "*"
+                + "  " + indice_temp + " = " + $3.valor + "*"
                 + toString(t_matriz.tam[1]) + ";\n"
                 + "  " + indice_temp + " = "
-                + multi_temp + " + " + $6.valor + ";\n"
+                + indice_temp + " + " + $6.valor + ";\n"
                 + "  " + $$.valor + " = " + $1.valor
                 + "[" + indice_temp + "];\n";
 
@@ -828,10 +823,17 @@ string toString(int n){
 }
 
 string declara_variavel(string nome, Tipo tipo){
-  // Strings sao um caso a parte
-  // TODO(jullytta): lidar com strings de uma forma inteligente
-  if(tipo.tipo_base == "s")
-    return "char " + nome + "[" + toString(MAX_STRING_SIZE) + "]";
+  if(tipo.tipo_base == "s"){
+    int tam_vet = MAX_STRING_SIZE;
+    switch(tipo.ndim){
+      // As dimensoes do array sao constantes, sempre
+      case 2:
+        tam_vet *= tipo.tam[1];
+      case 1:
+        tam_vet *= tipo.tam[0];
+    }
+    return "char " + nome + "[" + toString(tam_vet) + "]";
+  }
 
   string declaracao = traduz_interno_para_C(tipo.tipo_base) + " " + nome;
   switch(tipo.ndim){
@@ -926,6 +928,14 @@ string gera_nome_var_temp(string tipo_interno){
 }
 
 string atribuicao_var(Atributos s1, Atributos s3){
+  // Verifica se estamos trabalhando com dimensao zero
+  // como era esperado se chamamos essa funcao.
+  if(s1.tipo.ndim != 0 || s3.tipo.ndim != 0)
+    erro("Atribuicao nao permitida! Variavel " + s1.valor
+          + ", dimensao " + toString(s1.tipo.ndim)
+          + " nao e' compativel com variavel " + s3.valor
+          + ", dimensao " + toString(s3.tipo.ndim));
+
   if (is_atribuivel(s1, s3) == 1){
     if (s1.tipo.tipo_base == "s"){
        return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", "
@@ -941,6 +951,14 @@ string atribuicao_var(Atributos s1, Atributos s3){
           + traduz_interno_para_gueto(s1.tipo.tipo_base) + " = "
           + traduz_interno_para_gueto(s3.tipo.tipo_base));
   }
+}
+
+// TODO(jullytta): Lidar com strings
+string atribuicao_array(Atributos id, Atributos index, Atributos resultado){
+  return index.codigo + resultado.codigo
+            + testa_limites_array(id, index)
+            + "  " + id.valor + "[" + index.valor + "] = "
+            + resultado.valor + ";\n";
 }
 
 string leitura_padrao(Atributos s3){
@@ -1032,6 +1050,19 @@ int aceita_tipo(string opr, Atributos expr){
       }
   }
   return 0;
+}
+
+// TODO(jullytta): Lidar com strings
+Atributos acessa_array(Atributos id, Atributos indice){
+  Atributos ss;
+
+  ss.tipo = Tipo(consulta_ts(id.valor).tipo_base);
+  ss.valor = gera_nome_var_temp(ss.tipo.tipo_base);
+  ss.codigo = indice.codigo + testa_limites_array(id, indice)
+            + "  " + ss.valor + " = " + id.valor
+            + "[" + indice.valor + "];\n";
+
+  return ss;
 }
 
 // TODO(jullytta): Operacoes com vetores
