@@ -70,6 +70,8 @@ map<string, Tipo> ts;
 vector<string> vars_bloco;
 // Faz o mapeamento dos tipos dos operadores
 map<string, string> tipo_opr;
+// declara variaveis  globais
+vector<string> vars_globais;
 // faz a verificacao de tipos
 map< string, vector<string> > tipo_expr;
 // label de break do switch
@@ -171,9 +173,16 @@ DECLS : DECLS DECL
       |
       ;
 
-DECL : VAR ';' // Variaveis globais
+DECL : GLOBAL_VAR ';' // Variaveis globais
      | FUNCAO
      ;
+
+// nao dava para usar o VAR pq ta declarando so coisa no bloco
+GLOBAL_VAR : TIPO VAR_DEFS
+           | TIPO NOME_VAR TK_ATRIB E
+           | TIPO NOME_VAR '[' TK_CINT ']'
+           | TIPO NOME_VAR '[' TK_CINT ']' '[' TK_CINT ']'
+           ;
 
 // Permite tipo var1, var2, var3 e tipo var1 = expr;
 // mas nao tipo var1 = expr, var2;
@@ -185,7 +194,6 @@ VAR : TIPO VAR_DEFS
         // Cada variavel e' inserida na tabela de simbolos e
         // sua declaracao e' adicionada a lista de declaracao
         // do bloco atual, que so sera impressa no inicio do bloco.
-        compara_switch_var = gera_nome_var_temp("b");
         for(vector<string>::iterator it = $2.lista_str.begin();
                                      it != $2.lista_str.end();
                                      it++){
@@ -195,9 +203,8 @@ VAR : TIPO VAR_DEFS
           insere_ts(*it, $1.tipo);
         }
       }
-    | TIPO TK_ID TK_ATRIB E
+    | TIPO NOME_VAR TK_ATRIB E
       {
-        compara_switch_var = gera_nome_var_temp("b");
         $$ = Atributos($2.valor, $1.tipo);
         vars_bloco[vars_bloco.size()-1] += "  "
                                         + declara_variavel($2.valor, $1.tipo)
@@ -206,7 +213,7 @@ VAR : TIPO VAR_DEFS
         $2.tipo = $1.tipo;
         $$.codigo = atribuicao_var($2, $4);
       }
-    | TIPO TK_ID '[' TK_CINT ']'
+    | TIPO NOME_VAR '[' TK_CINT ']'
       {
         $$ = Atributos($2.valor, Tipo($1.tipo.tipo_base, toInt($4.valor)));
         vars_bloco[vars_bloco.size()-1] += "  "
@@ -214,7 +221,7 @@ VAR : TIPO VAR_DEFS
                                         + ";\n";
         insere_ts($$.valor, $$.tipo);
       }
-    | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
+    | TIPO NOME_VAR '[' TK_CINT ']' '[' TK_CINT ']'
       {
         $$ = Atributos($2.valor, Tipo($1.tipo.tipo_base,
                                       toInt($4.valor),
@@ -227,18 +234,24 @@ VAR : TIPO VAR_DEFS
     ;
 
 // Permite declaracoes como tipo a, b, c, d;
-VAR_DEFS  : TK_ID ',' VAR_DEFS
+VAR_DEFS  : NOME_VAR ',' VAR_DEFS
             {
               $$.lista_str.push_back($1.valor);
               $$.lista_str.insert($$.lista_str.end(),
                                   $3.lista_str.begin(),
                                   $3.lista_str.end());
             }
-          | TK_ID
+          | NOME_VAR
             {
               $$.lista_str.push_back($1.valor);
             }
           ;
+
+NOME_VAR : TK_ID
+           {
+             compara_switch_var = gera_nome_var_temp("b");
+           }
+         ;
 
 ATRIB : TK_ID TK_ATRIB E
         {
@@ -462,7 +475,7 @@ CMD_DO_WHILE : TK_DO SUB_BLOCO TK_WHILE '(' E ')'
 
 CMD_SWITCH : TK_SWITCH '(' E ')' BLOCO_SWITCH
              {
-               $3.tipo = consulta_ts($3.valor);
+               //$3.tipo = consulta_ts($3.valor);
                $$.codigo = atribuicao_var(Atributos(compara_switch_var,
                                                     $3.tipo.tipo_base),
                                                     $3);
@@ -507,6 +520,7 @@ CASO_PADRAO : TK_DEFAULT ':' CMDS
                 $$ = $3; // sobe o padrao para ele ser o ultimo
               }
             ;
+
 
 E : E '+' E
     {
@@ -796,7 +810,8 @@ void inicializa_verificacao_tipos(){
   tipo_expr["switch"].push_back("b");
   tipo_expr["switch"].push_back("i");
 
-  //TODO(John): tipos aceitos pelo for
+  tipo_expr["for"].push_back("b");
+  tipo_expr["for"].push_back("i");
 
 }
 
@@ -1204,21 +1219,27 @@ Atributos gera_codigo_for(Atributos atrib,
                           Atributos pulo,
                           Atributos bloco){
   Atributos ss;
-  string var_fim = gera_nome_var_temp( atrib.tipo.tipo_base );
-  string label_teste = gera_label( "teste_for" );
-  string label_end = gera_label( "fim_for" );
-  string condicao_var = gera_nome_var_temp(condicao.tipo.tipo_base);
+  if (aceita_tipo("for", condicao)){
+    string var_fim = gera_nome_var_temp( atrib.tipo.tipo_base );
+    string label_teste = gera_label( "teste_for" );
+    string label_end = gera_label( "fim_for" );
+    string condicao_var = gera_nome_var_temp(condicao.tipo.tipo_base);
 
-  ss.codigo = atrib.codigo
-            + label_teste + ":;\n"
-            + condicao.codigo + "  "
-            + condicao_var + " = !" + condicao.valor + ";\n\n"
-            + "if ("+ condicao_var +") goto " + label_end
-            + ";\n" + desbloquifica(bloco.codigo)
-            + pulo.codigo
-            + "  goto " + label_teste + ";\n"
-            + label_end + ":;\n"
-            ;
+    ss.codigo = atrib.codigo
+              + label_teste + ":;\n"
+              + condicao.codigo + "  "
+              + condicao_var + " = !" + condicao.valor + ";\n\n"
+              + "if ("+ condicao_var +") goto " + label_end
+              + ";\n" + desbloquifica(bloco.codigo)
+              + pulo.codigo
+              + "  goto " + label_teste + ";\n"
+              + label_end + ":;\n"
+              ;
+  }else{
+    erro("Condicao nao permitida! O tipo ["
+         + traduz_interno_para_gueto(condicao.tipo.tipo_base)
+         +"] nao e um tipo valido pro do for");
+  }
   return ss;
 }
 
