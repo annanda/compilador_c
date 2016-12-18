@@ -11,6 +11,9 @@ mano {
   revela(arrei[arrei[0]*a+b]);
 
   daboul matris[5][5];
+  matris[2][3] = 1.0;
+
+  revela(matris[2][3]*(a+b));
 
   flwvlw;
 }

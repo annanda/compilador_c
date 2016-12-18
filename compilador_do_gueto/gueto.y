@@ -38,6 +38,9 @@ string leitura_padrao(Atributos s3);
 string gera_label(string tipo);
 string desbloquifica(string lexema);
 string testa_limites_array(Atributos id, Atributos indice);
+string testa_limites_matriz(Atributos id,
+                            Atributos indice1,
+                            Atributos indice2);
 
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
@@ -213,6 +216,7 @@ VAR : TIPO VAR_DEFS
         vars_bloco[vars_bloco.size()-1] += "  "
                                         + declara_variavel($$.valor, $$.tipo)
                                         + ";\n";
+        insere_ts($$.valor, $$.tipo);
       }
     ;
 
@@ -242,6 +246,19 @@ ATRIB : TK_ID TK_ATRIB E
                     + testa_limites_array($1, $3)
                     + "  " + $1.valor + "[" + $3.valor + "] = "
                     + $6.valor + ";\n";
+        }
+      | TK_ID '[' E ']' '[' E ']' TK_ATRIB E
+        {
+          // Chama o teste de limites antes de mais nada.
+          string teste_limites = testa_limites_matriz($1, $3, $6);
+
+          Tipo t_matriz = consulta_ts($1.valor);
+          int indice_mapeado = toInt($3.valor)*t_matriz.tam[1]
+                             + toInt($6.valor);
+          $$.codigo = $3.codigo + $6.codigo + $9.codigo
+                    + teste_limites
+                    + "  " + $1.valor + "[" + toString(indice_mapeado)
+                    + "] = " + $9.valor + ";\n";
         }
       ;
 
@@ -558,6 +575,22 @@ F : TK_ID
       $$.codigo = $3.codigo + testa_limites_array($1, $3)
                 + "  " + $$.valor + " = " + $1.valor
                 + "[" + $3.valor + "];\n";
+    }
+  | TK_ID '[' E ']' '[' E ']'
+    {
+      // Chama o teste de limites antes de mais nada.
+      string teste_limites = testa_limites_matriz($1, $3, $6);
+
+      Tipo t_matriz = consulta_ts($1.valor);
+      int indice_mapeado = toInt($3.valor)*t_matriz.tam[1]
+                         + toInt($6.valor);
+
+      $$.tipo = Tipo(t_matriz.tipo_base);
+      $$.valor = gera_nome_var_temp($$.tipo.tipo_base);
+
+      $$.codigo = $3.codigo + $6.codigo + teste_limites
+                + "  " + $$.valor + " = " + $1.valor
+                + "[" + toString(indice_mapeado) + "];\n";
     }
   | TK_CINT
     {
@@ -915,14 +948,31 @@ string testa_limites_array(Atributos id, Atributos indice){
   if(indice.tipo.tipo_base != "i" || indice.tipo.ndim != 0)
     erro("Indice de arrei deve ser intero.");
 
-  // Verifica se a variavel e' mesmo um array
-  // de dimensao 1
+  // Verifica se a variavel e' mesmo um array de dimensao 1
   if(t_array.ndim != 1)
     erro("Variavel " + id.valor + " nao e' arrei de dimensao um.");
 
   // TODO(jullytta): verificar se o limite do array foi ultrapassado
   // Isso deve ser feito dinamicamente, temos que gerar codigo.
   // Retornar esse codigo gerado.
+  return "";
+}
+
+string testa_limites_matriz(Atributos id,
+                            Atributos indice1,
+                            Atributos indice2){
+  Tipo t_matriz = consulta_ts(id.valor);
+
+  // Verifica o tipo dos indices
+  if(indice1.tipo.tipo_base != "i" || indice2.tipo.tipo_base != "i" ||
+     indice1.tipo.ndim != 0 || indice2.tipo.ndim != 0)
+    erro("Indice de arrei deve ser intero.");
+
+  // Verifica se a variavel e' mesmo um array de dimensao 2
+  if(t_matriz.ndim != 2)
+    erro("Variavel " + id.valor + " nao e' arrei de dimensao dois.");
+
+  // TODO(jullytta): codigo do teste dinamico retornado
   return "";
 }
 
