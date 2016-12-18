@@ -36,7 +36,9 @@ string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string gera_nome_var_temp_sem_declarar(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
-string atribuicao_array(Atributos id, Atributos index, Atributos resultado);
+string atribuicao_array(Atributos id,
+                        Atributos indice,
+                        Atributos resultado);
 string gera_codigo_atribuicao_string(Atributos id,
                                      Atributos indice,
                                      Atributos resultado);
@@ -1004,15 +1006,16 @@ string atribuicao_var(Atributos s1, Atributos s3){
   }
 }
 
-// TODO(jullytta): Lidar com strings
-string atribuicao_array(Atributos id, Atributos index, Atributos resultado){
+string atribuicao_array(Atributos id,
+                        Atributos indice,
+                        Atributos resultado){
   Tipo t_array(consulta_ts(id.valor).tipo_base);
   if(t_array.tipo_base == "s")
-    return gera_codigo_atribuicao_string(id, index, resultado);
+    return gera_codigo_atribuicao_string(id, indice, resultado);
 
-  return index.codigo + resultado.codigo
-            + testa_limites_array(id, index)
-            + "  " + id.valor + "[" + index.valor + "] = "
+  return indice.codigo + resultado.codigo
+            + testa_limites_array(id, indice)
+            + "  " + id.valor + "[" + indice.valor + "] = "
             + resultado.valor + ";\n";
 }
 
