@@ -188,8 +188,6 @@ DECL : GLOBAL_VAR ';' // Variaveis globais
      | FUNCAO
      ;
 
-
-
 // nao dava para usar o VAR pq ta declarando so coisa no bloco
 GLOBAL_VAR : TIPO TK_ID
              {
@@ -271,6 +269,7 @@ VAR_DEFS  : NOME_VAR ',' VAR_DEFS
 
 NOME_VAR : TK_ID
            {
+             // pro switch funcionar eu fiz isto!
              compara_switch_var = gera_nome_var_temp("b");
            }
          ;
