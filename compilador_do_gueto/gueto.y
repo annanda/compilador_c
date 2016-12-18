@@ -37,6 +37,7 @@ string atribuicao_var(Atributos s1, Atributos s3);
 string leitura_padrao(Atributos s3);
 string gera_label(string tipo);
 string desbloquifica(string lexema);
+string testa_limites_array(Atributos id, Atributos indice);
 
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
@@ -219,6 +220,12 @@ ATRIB : TK_ID TK_ATRIB E
           $$.codigo = atribuicao_var($1, $3);
         }
       | TK_ID '[' E ']' TK_ATRIB E
+        {
+          $$.codigo = $3.codigo + $6.codigo
+                    + testa_limites_array($1, $3)
+                    + "  " + $1.valor + "[" + $3.valor + "] = "
+                    + $6.valor + ";\n";
+        }
       ;
 
 TIPO  : TK_INT
@@ -479,6 +486,14 @@ F : TK_ID
       $$.valor = $1.valor;
       $$.tipo = consulta_ts($1.valor);
       $$.codigo = $1.codigo;
+    }
+  | TK_ID '[' E ']'
+    {
+      $$.tipo = Tipo(consulta_ts($1.valor).tipo_base);
+      $$.valor = gera_nome_var_temp($$.tipo.tipo_base);
+      $$.codigo = $3.codigo + testa_limites_array($1, $3)
+                + "  " + $$.valor + " = " + $1.valor
+                + "[" + $3.valor + "];\n";
     }
   | TK_CINT
     {
@@ -816,6 +831,24 @@ string desbloquifica(string lexema){
   lexema[0] = ' '; //remove {
   lexema[lexema.size()-2] = ' '; // remove }
   return lexema;
+}
+
+string testa_limites_array(Atributos id, Atributos indice){
+  Tipo t_array = consulta_ts(id.valor);
+
+  // Verifica o tipo do indice
+  if(indice.tipo.tipo_base != "i" || indice.tipo.ndim != 0)
+    erro("Indice de arrei deve ser intero.");
+
+  // Verifica se a variavel e' mesmo um array
+  // de dimensao 1
+  if(t_array.ndim != 1)
+    erro("Variavel " + id.valor + " nao e' arrei de dimensao um.");
+
+  // TODO(jullytta): verificar se o limite do array foi ultrapassado
+  // Isso deve ser feito dinamicamente, temos que gerar codigo.
+  // Retornar esse codigo gerado.
+  return "";
 }
 
 int is_atribuivel(Atributos s1, Atributos s3){

@@ -1,0 +1,14 @@
+mano {
+
+  intero arrei[10];
+  arrei[0] = 1;
+
+  intero a = 3;
+  intero b = 2;
+  
+  arrei[a+b] = 2;
+
+  revela(arrei[arrei[0]*a+b]);
+
+  flwvlw;
+}
