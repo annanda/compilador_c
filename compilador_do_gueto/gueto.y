@@ -1006,10 +1006,8 @@ string atribuicao_array(Atributos id,
                         Atributos indice,
                         Atributos resultado){
   Tipo t_array(consulta_ts(id.valor).tipo_base);
-  if(t_array.tipo_base == "s"){
-    cerr << "Atribuindo " << id.valor << endl;
+  if(t_array.tipo_base == "s")
     return gera_codigo_atribuicao_string(id, indice, resultado);
-  }
 
   return indice.codigo + resultado.codigo
             + testa_limites_array(id, indice)
