@@ -283,7 +283,7 @@ TIPO  : TK_INT
         }
       | TK_STRING
         {
-          Tipo t("s", MAX_STRING_SIZE);
+          Tipo t("s");
           $$ = Atributos("char[]", t);
         }
       | TK_BOOL
@@ -804,10 +804,17 @@ string toString(int n){
 }
 
 string declara_variavel(string nome, Tipo tipo){
-  // Strings sao um caso a parte
-  // TODO(jullytta): lidar com strings de uma forma inteligente
-  if(tipo.tipo_base == "s")
-    return "char " + nome + "[" + toString(MAX_STRING_SIZE) + "]";
+  if(tipo.tipo_base == "s"){
+    int tam_vet = MAX_STRING_SIZE;
+    switch(tipo.ndim){
+      // As dimensoes do array sao constantes, sempre
+      case 2:
+        tam_vet *= tipo.tam[1];
+      case 1:
+        tam_vet *= tipo.tam[0];
+    }
+    return "char " + nome + "[" + toString(tam_vet) + "]";
+  }
 
   string declaracao = traduz_interno_para_C(tipo.tipo_base) + " " + nome;
   switch(tipo.ndim){
@@ -902,6 +909,7 @@ string gera_nome_var_temp(string tipo_interno){
 }
 
 string atribuicao_var(Atributos s1, Atributos s3){
+  // TODO(jullytta): trazer a atribuicao de array para ca 
   if (is_atribuivel(s1, s3) == 1){
     if (s1.tipo.tipo_base == "s"){
        return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", "
