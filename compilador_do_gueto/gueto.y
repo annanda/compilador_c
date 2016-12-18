@@ -460,7 +460,9 @@ CMD_DO_WHILE : TK_DO SUB_BLOCO TK_WHILE '(' E ')'
 CMD_SWITCH : TK_SWITCH '(' E ')' BLOCO_SWITCH
              {
                $3.tipo = consulta_ts($3.valor);
-               $$.codigo = atribuicao_var(Atributos(compara_switch_var, $3.tipo.tipo_base), $3);
+               $$.codigo = atribuicao_var(Atributos(compara_switch_var,
+                                                    $3.tipo.tipo_base),
+                                                    $3);
                $$.codigo += gera_codigo_switch($3, $5).codigo;
              }
            ;
@@ -908,8 +910,18 @@ string gera_nome_var_temp(string tipo_interno){
   return nome;
 }
 
+// TODO(jullytta): criar funcao semelhante a essa para atribuicao
+// de array. Tambem vamos precisar de uma funcao que acessa array.
+// + funcoes equivalentes para array de duas dimensoes
 string atribuicao_var(Atributos s1, Atributos s3){
-  // TODO(jullytta): trazer a atribuicao de array para ca 
+  // Verifica se estamos trabalhando com dimensao zero
+  // como era esperado se chamamos essa funcao.
+  if(s1.tipo.ndim != 0 || s3.tipo.ndim != 0)
+    erro("Atribuicao nao permitida! Variavel " + s1.valor
+          + ", dimensao " + toString(s1.tipo.ndim)
+          + " nao e' compativel com variavel " + s3.valor
+          + ", dimensao " + toString(s3.tipo.ndim));
+
   if (is_atribuivel(s1, s3) == 1){
     if (s1.tipo.tipo_base == "s"){
        return s3.codigo + "  strncpy("+ s1.valor + ", " + s3.valor +", "
