@@ -1,0 +1,10 @@
+mano {
+
+  cadea nomes[2];
+  cadea c = "connie";
+  cadea s = "steven";
+  nomes[0] = s;
+  nomes[1] = c;
+
+  flwvlw;
+}
