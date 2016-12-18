@@ -1,35 +1,9 @@
 
 mano {
 
-  intero arrei[10];
-
-  intero a = 3;
-  daboul b, c;
-  b = 2.0;
-  c = a * b;
-
   cadea relou = "Oi";
   cadea uoud = "mundo";
   revela(relou + " " + uoud + "!");
-
-  xar xarizard;
-  xarizard = 'a';
-
-  bul xxx;
-  bul yyy;
-  xxx = Falsiane;
-  yyy = (2.0 <> 2);
-
-  se(a modis 3 == 0) {
-    revela("a eh divisivel por 3");
-  }
-
-  se(naum yyy) {
-    revela("Parece que o jogo virou, nao eh mesmo?");
-  }
-  xxx = yyy;
-
-  revela(50+60+70);
 
   revela("Fala que eu repito!");
   cadea leituras;
@@ -37,29 +11,27 @@ mano {
   revela("Voce disse:");
   revela(leituras);
 
-  intero li;
+  intero n;
   revela("Entra com um numero agora vai:");
-  descobre(li);
+  descobre(n);
 
-  intero x;
-  x = 0;
-  enquanto (x < 10){
+  intero x = 0;
+  enquanto (x < n){
     x = x + 1;
+  }
+  se(x == n){
     revela("Enquanto funciona, viado!");
-    revela(x);
   }
 
-  intero h;
-  h = 10;
+  intero h = n;
   fassa {
     h = h-1;
-    revela("Do while funciona!");
-    revela(h);
   } enquanto(h > 0);
+  revela("Do-while funciona, vadia!");
 
-  pra(intero i = 0; i < 10; i = i+1){
-    revela("For: ");
-    revela(i);
+  pra(intero i = 0; i < 10; i = i+1){}
+  se(i == 10){
+    revela("For funciona, biscate!");
   }
 
   flwvlw 50+10+30;
