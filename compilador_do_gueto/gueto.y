@@ -34,6 +34,7 @@ string traduz_operador_C_para_gueto(string opr_c);
 string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
+string atribuicao_array(Atributos id, Atributos index, Atributos resultado);
 string leitura_padrao(Atributos s3);
 string gera_label(string tipo);
 string desbloquifica(string lexema);
@@ -242,10 +243,7 @@ ATRIB : TK_ID TK_ATRIB E
         }
       | TK_ID '[' E ']' TK_ATRIB E
         {
-          $$.codigo = $3.codigo + $6.codigo
-                    + testa_limites_array($1, $3)
-                    + "  " + $1.valor + "[" + $3.valor + "] = "
-                    + $6.valor + ";\n";
+          $$.codigo = atribuicao_array($1, $3, $6);
         }
       | TK_ID '[' E ']' '[' E ']' TK_ATRIB E
         {
@@ -937,6 +935,13 @@ string atribuicao_var(Atributos s1, Atributos s3){
           + traduz_interno_para_gueto(s1.tipo.tipo_base) + " = "
           + traduz_interno_para_gueto(s3.tipo.tipo_base));
   }
+}
+
+string atribuicao_array(Atributos id, Atributos index, Atributos resultado){
+  return index.codigo + resultado.codigo
+            + testa_limites_array(id, index)
+            + "  " + id.valor + "[" + index.valor + "] = "
+            + resultado.valor + ";\n";
 }
 
 string leitura_padrao(Atributos s3){
