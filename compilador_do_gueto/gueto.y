@@ -163,7 +163,7 @@ DECL : VAR ';' // Variaveis globais
 // Permite tipo var1, var2, var3 e tipo var1 = expr;
 // mas nao tipo var1 = expr, var2;
 // Arrays devem ser declarados separadamente
-// e.g. intero a[10];
+// e.g. intero a[10]; daboul b[5][5];
 VAR : TIPO VAR_DEFS
       {
         // Os nomes das variaveis estao na lista_str de $2.
@@ -196,6 +196,15 @@ VAR : TIPO VAR_DEFS
                                         + declara_variavel($$.valor, $$.tipo)
                                         + ";\n";
         insere_ts($$.valor, $$.tipo);
+      }
+    | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
+      {
+        $$ = Atributos($2.valor, Tipo($1.tipo.tipo_base,
+                                      toInt($4.valor),
+                                      toInt($7.valor)));
+        vars_bloco[vars_bloco.size()-1] += "  "
+                                        + declara_variavel($$.valor, $$.tipo)
+                                        + ";\n";
       }
     ;
 
@@ -699,12 +708,23 @@ string toString(int n){
 }
 
 string declara_variavel(string nome, Tipo tipo){
+  // Strings sao um caso a parte
+  // TODO(jullytta): lidar com strings de uma forma inteligente
   if(tipo.tipo_base == "s")
     return "char " + nome + "[" + toString(MAX_STRING_SIZE) + "]";
-  if(tipo.ndim == 1)
-    return traduz_interno_para_C(tipo.tipo_base)
-            + " " + nome + "[" + toString(tipo.tam[0]) + "]";
-  return traduz_interno_para_C(tipo.tipo_base) + " " + nome;
+
+  string declaracao = traduz_interno_para_C(tipo.tipo_base) + " " + nome;
+  switch(tipo.ndim){
+    case 0:
+      return declaracao;
+    case 1:
+      return declaracao + "[" + toString(tipo.tam[0]) + "]";
+    case 2:
+      int tam_vet = tipo.tam[0]*tipo.tam[1];
+      return declaracao + "[" + toString(tam_vet) + "]";
+  }
+  // Nao deveria chegar aqui
+  return "";
 }
 
 string traduz_interno_para_C(string interno){
