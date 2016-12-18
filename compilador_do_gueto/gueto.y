@@ -42,6 +42,7 @@ string atribuicao_array(Atributos id,
 string gera_codigo_atribuicao_string(Atributos id,
                                      Atributos indice,
                                      Atributos resultado);
+string gera_codigo_acesso_string(Atributos id, Atributos indice, string nome);
 string leitura_padrao(Atributos s3);
 string gera_label(string tipo);
 string desbloquifica(string lexema);
@@ -1068,6 +1069,55 @@ string gera_codigo_atribuicao_string(Atributos id,
   return codigo;
 }
 
+string gera_codigo_acesso_string(Atributos id,
+                                 Atributos indice,
+                                 string nome){
+  string codigo = indice.codigo;
+
+  string label_teste = gera_label("teste_substring");
+  string label_fim = gera_label("fim_substring");
+
+  string condicao = gera_nome_var_temp("b");
+  string inicio = gera_nome_var_temp("i");
+  string fim = gera_nome_var_temp("i");
+
+  string indice_mais_um = gera_nome_var_temp("i");
+  string indice_loop = gera_nome_var_temp("i");
+  string indice_loop_menos_inicio = gera_nome_var_temp("i");
+
+  string char_copiado = gera_nome_var_temp("c");
+
+  // Inicializa inicio e fim
+  codigo += "  " + inicio + " = " + toString(MAX_STRING_SIZE)
+         + " * " + indice.valor + ";\n"
+         + "  " + indice_mais_um + " = " + indice.valor + " + 1;\n"
+         + "  " + fim + " = " + toString(MAX_STRING_SIZE)
+         + " * " + indice_mais_um + ";\n";
+
+  // Inicializa o indice do loop
+  codigo += "  " + indice_loop + " = " + inicio + ";\n";
+
+  // Cria o teste se ainda estamos no loop
+  codigo += label_teste + ":;\n"
+         + "  " + condicao + " = " + indice_loop + " < " + fim + ";\n"
+         + "  " + condicao + " = !" + condicao + ";\n"
+         + "  if(" + condicao + ") goto " + label_fim + ";\n";
+
+  // A copia de fato acontece aqui
+  codigo += "  " + indice_loop_menos_inicio + " = " + indice_loop
+         + " - " + inicio + ";\n"
+         + "  " + char_copiado + " = " + id.valor + "["
+         + indice_loop + "];\n"
+         + "  " + nome + "[" + indice_loop_menos_inicio + "] = "
+         + char_copiado + ";\n"
+         + "  " + indice_loop + " = " + indice_loop + " + 1;\n"
+         + "goto " + label_teste + ";\n";
+
+  codigo += label_fim + ":;\n";
+
+  return codigo;
+}
+
 string leitura_padrao(Atributos s3){
   string codigo;
   // Usado para encontrar o pula linha que vem com fgets
@@ -1159,15 +1209,17 @@ int aceita_tipo(string opr, Atributos expr){
   return 0;
 }
 
-// TODO(jullytta): Lidar com strings
 Atributos acessa_array(Atributos id, Atributos indice){
   Atributos ss;
 
   ss.tipo = Tipo(consulta_ts(id.valor).tipo_base);
   ss.valor = gera_nome_var_temp(ss.tipo.tipo_base);
-  ss.codigo = indice.codigo + testa_limites_array(id, indice)
-            + "  " + ss.valor + " = " + id.valor
-            + "[" + indice.valor + "];\n";
+  if(ss.tipo.tipo_base == "s")
+    ss.codigo = gera_codigo_acesso_string(id, indice, ss.valor);
+  else
+    ss.codigo = indice.codigo + testa_limites_array(id, indice)
+              + "  " + ss.valor + " = " + id.valor
+              + "[" + indice.valor + "];\n";
 
   return ss;
 }
