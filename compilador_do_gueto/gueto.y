@@ -252,15 +252,14 @@ ATRIB : TK_ID TK_ATRIB E
           // Chama o teste de limites antes de mais nada.
           string teste_limites = testa_limites_matriz($1, $3, $6);
           string indice_temp = gera_nome_var_temp("i");
-          string multi_temp = gera_nome_var_temp("i");
 
           Tipo t_matriz = consulta_ts($1.valor);
 
           $$.codigo = $3.codigo + $6.codigo + $9.codigo
-                    + "  " + multi_temp + " = " + $3.valor + "*"
+                    + "  " + indice_temp + " = " + $3.valor + "*"
                     + toString(t_matriz.tam[1]) + ";\n"
                     + "  " + indice_temp + " = "
-                    + multi_temp + " + " + $6.valor + ";\n"
+                    + indice_temp + " + " + $6.valor + ";\n"
                     + teste_limites
                     + "  " + $1.valor + "[" + indice_temp
                     + "] = " + $9.valor + ";\n";
@@ -586,7 +585,6 @@ F : TK_ID
       // Chama o teste de limites antes de mais nada.
       string teste_limites = testa_limites_matriz($1, $3, $6);
       string indice_temp = gera_nome_var_temp("i");
-      string multi_temp = gera_nome_var_temp("i");
 
       Tipo t_matriz = consulta_ts($1.valor);
 
@@ -594,10 +592,10 @@ F : TK_ID
       $$.valor = gera_nome_var_temp($$.tipo.tipo_base);
 
       $$.codigo = $3.codigo + $6.codigo + teste_limites
-                + "  " + multi_temp + " = " + $3.valor + "*"
+                + "  " + indice_temp + " = " + $3.valor + "*"
                 + toString(t_matriz.tam[1]) + ";\n"
                 + "  " + indice_temp + " = "
-                + multi_temp + " + " + $6.valor + ";\n"
+                + indice_temp + " + " + $6.valor + ";\n"
                 + "  " + $$.valor + " = " + $1.valor
                 + "[" + indice_temp + "];\n";
 
