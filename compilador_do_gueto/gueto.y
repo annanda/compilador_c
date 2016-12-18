@@ -261,12 +261,12 @@ VAR : TIPO VAR_DEFS
     ;
 
 // Permite declaracoes como tipo a, b, c, d;
-VAR_DEFS  : NOME_VAR ',' VAR_DEFS
+VAR_DEFS  : VAR_DEFS ',' NOME_VAR
             {
-              $$.lista_str.push_back($1.valor);
+              $$.lista_str.push_back($3.valor);
               $$.lista_str.insert($$.lista_str.end(),
-                                  $3.lista_str.begin(),
-                                  $3.lista_str.end());
+                                  $1.lista_str.begin(),
+                                  $1.lista_str.end());
             }
           | NOME_VAR
             {
