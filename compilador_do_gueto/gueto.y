@@ -662,9 +662,13 @@ F : TK_ID
     }
   | TK_CSTRING
     {
-      $$.valor = $1.valor;
-      $$.tipo = Tipo("s");
-      $$.codigo = $1.codigo;
+      // Nao e' interessante ter strings constantes ja que
+      // nao podemos fazer operacoes char a char com elas.
+      // Todas as strings sao atribuidas a uma temporaria.
+      string v = gera_nome_var_temp("s");
+      $$ = Atributos(v, Tipo("s"));
+      $$.codigo = "  strncpy(" + v + ", " + $1.valor + ", "
+                + toString(MAX_STRING_SIZE) + ");\n";
     }
   | BOOL
   ;
