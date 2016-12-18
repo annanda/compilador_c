@@ -292,7 +292,9 @@ ATRIB : TK_ID TK_ATRIB E
         }
       | TK_ID '[' E ']' TK_ATRIB E
         {
-          $$.codigo = atribuicao_array($1, $3, $6);
+          $$.codigo = $3.codigo + $6.codigo
+                    + testa_limites_array($1, $3)
+                    + atribuicao_array($1, $3, $6);
         }
       | TK_ID '[' E ']' '[' E ']' TK_ATRIB E
         {
@@ -301,6 +303,7 @@ ATRIB : TK_ID TK_ATRIB E
           string indice_temp = gera_nome_var_temp("i");
 
           Tipo t_matriz = consulta_ts($1.valor);
+          Atributos s3(indice_temp, Tipo("i"));
 
           $$.codigo = $3.codigo + $6.codigo + $9.codigo
                     + "  " + indice_temp + " = " + $3.valor + "*"
@@ -308,8 +311,7 @@ ATRIB : TK_ID TK_ATRIB E
                     + "  " + indice_temp + " = "
                     + indice_temp + " + " + $6.valor + ";\n"
                     + teste_limites
-                    + "  " + $1.valor + "[" + indice_temp
-                    + "] = " + $9.valor + ";\n";
+                    + atribuicao_array($1, s3, $9);
         }
       ;
 
@@ -630,6 +632,9 @@ F : TK_ID
   | TK_ID '[' E ']'
     {
       $$ = acessa_array($1, $3);
+      $$.codigo = $3.codigo
+                + testa_limites_array($1, $3)
+                + $$.codigo;
     }
   | TK_ID '[' E ']' '[' E ']'
     {
@@ -642,13 +647,14 @@ F : TK_ID
       $$.tipo = Tipo(t_matriz.tipo_base);
       $$.valor = gera_nome_var_temp($$.tipo.tipo_base);
 
+      Atributos s3(indice_temp, Tipo("i"));
+      $$ = acessa_array($1, s3);
       $$.codigo = $3.codigo + $6.codigo + teste_limites
                 + "  " + indice_temp + " = " + $3.valor + "*"
                 + toString(t_matriz.tam[1]) + ";\n"
                 + "  " + indice_temp + " = "
                 + indice_temp + " + " + $6.valor + ";\n"
-                + "  " + $$.valor + " = " + $1.valor
-                + "[" + indice_temp + "];\n";
+                + $$.codigo;
 
     }
   | TK_CINT
@@ -1015,9 +1021,7 @@ string atribuicao_array(Atributos id,
   if(t_array.tipo_base == "s")
     return gera_codigo_atribuicao_string(id, indice, resultado);
 
-  return indice.codigo + resultado.codigo
-            + testa_limites_array(id, indice)
-            + "  " + id.valor + "[" + indice.valor + "] = "
+  return "  " + id.valor + "[" + indice.valor + "] = "
             + resultado.valor + ";\n";
 }
 
@@ -1025,10 +1029,8 @@ string gera_codigo_atribuicao_string(Atributos id,
                                      Atributos indice,
                                      Atributos resultado){
   string a_copiar = gera_nome_var_temp("s");
-
-  string codigo = indice.codigo + resultado.codigo;
-  codigo += "  strncpy(" + a_copiar + ", " + resultado.valor + ", "
-            + toString(MAX_STRING_SIZE) + ");\n";
+  string codigo = "  strncpy(" + a_copiar + ", " + resultado.valor + ", "
+                + toString(MAX_STRING_SIZE) + ");\n";
 
   string label_teste = gera_label("teste_substring");
   string label_fim = gera_label("fim_substring");
@@ -1077,7 +1079,7 @@ string gera_codigo_atribuicao_string(Atributos id,
 string gera_codigo_acesso_string(Atributos id,
                                  Atributos indice,
                                  string nome){
-  string codigo = indice.codigo;
+  string codigo = "";
 
   string label_teste = gera_label("teste_substring");
   string label_fim = gera_label("fim_substring");
@@ -1222,8 +1224,7 @@ Atributos acessa_array(Atributos id, Atributos indice){
   if(ss.tipo.tipo_base == "s")
     ss.codigo = gera_codigo_acesso_string(id, indice, ss.valor);
   else
-    ss.codigo = indice.codigo + testa_limites_array(id, indice)
-              + "  " + ss.valor + " = " + id.valor
+    ss.codigo = "  " + ss.valor + " = " + id.valor
               + "[" + indice.valor + "];\n";
 
   return ss;
