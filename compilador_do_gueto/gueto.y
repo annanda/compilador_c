@@ -19,6 +19,7 @@ int yylex();
 void yyerror(const char* st);
 void erro(string msg);
 void inicializa_operadores();
+void inicializa_verificacao_tipos();
 void insere_ts(string nome, Tipo tipo);
 
 Tipo consulta_ts(string nome);
@@ -44,6 +45,7 @@ string testa_limites_matriz(Atributos id,
 
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
+int aceita_tipo(string opr, Atributos expr);
 
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
 Atributos gera_codigo_operador_unario(string opr, Atributos s2);
@@ -66,6 +68,8 @@ map<string, Tipo> ts;
 vector<string> vars_bloco;
 // Faz o mapeamento dos tipos dos operadores
 map<string, string> tipo_opr;
+// faz a verificacao de tipos
+map< string, vector<string> > tipo_expr;
 // label de break do switch
 string label_break = gera_label("break");
 string label_passthrough = "";
@@ -783,6 +787,24 @@ void inicializa_operadores() {
 
 }
 
+void inicializa_verificacao_tipos(){
+  //tipos aceitos pelo if
+  tipo_expr["if"].push_back("b");
+  tipo_expr["if"].push_back("i");
+
+  //tipos aceitos pelo while
+  tipo_expr["while"].push_back("b");
+  tipo_expr["while"].push_back("i");
+
+  //tipos aceitos pelo switch
+  //mudar os tipos aceitos pelo switch nao vai dar mto certo
+  tipo_expr["switch"].push_back("b");
+  tipo_expr["switch"].push_back("i");
+
+  //TODO(John): tipos aceitos pelo for
+
+}
+
 void insere_ts(string nome, Tipo tipo){
   if(ts.find(nome) != ts.end()){
     erro("Variavel ja declarada: " + nome);
@@ -1001,6 +1023,17 @@ int toInt(string valor) {
   return aux;
 }
 
+int aceita_tipo(string opr, Atributos expr){
+  if (tipo_expr.count(opr)){
+    // TODO(JOHN): melhorar isso pq esse for parece ser bem ineficiente
+    for(int a = 0; a < tipo_expr[opr].size(); a++)
+      if (tipo_expr[opr].at(a) == expr.tipo.tipo_base){
+        return 1;
+      }
+  }
+  return 0;
+}
+
 // TODO(jullytta): Operacoes com vetores
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   Atributos ss;
@@ -1064,56 +1097,74 @@ Atributos gera_codigo_if(Atributos expr,
                          Atributos bloco_if,
                         Atributos bloco_else){
   Atributos ss;
-  string label_else = gera_label( "else" );
-  string label_end = gera_label( "end" );
-  string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
-  ss.codigo = expr.codigo + "  " + condicao_var
-            + " = !" + expr.valor + ";\n\n"
-            + "  if( " + condicao_var + " ) goto "
-            + label_else + ";\n"
-            + desbloquifica(bloco_if.codigo)
-            + "  goto " + label_end + ";\n"
-            + label_else + ":;\n"
-            + desbloquifica(bloco_else.codigo)
-            + label_end + ":;\n";
+  if (aceita_tipo("if", expr)){
+    string label_else = gera_label( "else" );
+    string label_end = gera_label( "end" );
+    string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
+    ss.codigo = expr.codigo + "  " + condicao_var
+              + " = !" + expr.valor + ";\n\n"
+              + "  if( " + condicao_var + " ) goto "
+              + label_else + ";\n"
+              + desbloquifica(bloco_if.codigo)
+              + "  goto " + label_end + ";\n"
+              + label_else + ":;\n"
+              + desbloquifica(bloco_else.codigo)
+              + label_end + ":;\n";
+  }else{
+    erro("Condicao nao permitida! O tipo ["
+         + traduz_interno_para_gueto(expr.tipo.tipo_base)
+         +"] nao e um tipo valido pro if");
+  }
   return ss;
 }
 
 Atributos gera_codigo_while(Atributos expr, Atributos bloco){
   Atributos ss;
-  string label_teste = gera_label( "teste_while" );
-  string label_end = gera_label( "fim_while" );
-  // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra
-  // verificar erros
-  string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
+  if (aceita_tipo("while", expr)){
+    string label_teste = gera_label( "teste_while" );
+    string label_end = gera_label( "fim_while" );
+    // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra
+    // verificar erros
+    string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
 
-  ss.codigo = label_teste + ":;\n"
-            + expr.codigo + "  "
-            + condicao_var + " = !" + expr.valor + ";\n\n"
-            + "if ("+ condicao_var +") goto " + label_end
-            + ";\n" + desbloquifica(bloco.codigo)
-            + "goto " + label_teste + ";\n"
-            + label_end + ":;\n"
-            ;
+    ss.codigo = label_teste + ":;\n"
+              + expr.codigo + "  "
+              + condicao_var + " = !" + expr.valor + ";\n\n"
+              + "if ("+ condicao_var +") goto " + label_end
+              + ";\n" + desbloquifica(bloco.codigo)
+              + "goto " + label_teste + ";\n"
+              + label_end + ":;\n"
+              ;
+  }else{
+    erro("Condicao nao permitida! O tipo ["
+         + traduz_interno_para_gueto(expr.tipo.tipo_base)
+         +"] nao e um tipo valido pro while");
+  }
   return ss;
 }
 
 Atributos gera_codigo_do_while(Atributos bloco, Atributos expr){
   Atributos ss;
-  string label_teste = gera_label( "teste_dowhile" );
-  string label_end = gera_label( "fim_dowhile" );
-  // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra
-  // verificar erros
-  string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
+  if (aceita_tipo("while", expr)){
+    string label_teste = gera_label( "teste_dowhile" );
+    string label_end = gera_label( "fim_dowhile" );
+    // o zizi coloca "b" ao inves de tipo_base, mas acho tipo_base melhor pra
+    // verificar erros
+    string condicao_var = gera_nome_var_temp(expr.tipo.tipo_base);
 
-  ss.codigo = label_teste + ":;\n"
-            + desbloquifica(bloco.codigo)
-            + expr.codigo + "  "
-            + condicao_var + " = !" + expr.valor + ";\n\n"
-            + "if ("+ condicao_var +") goto " + label_end + ";\n"
-            + "goto " + label_teste + ";\n"
-            + label_end + ":;\n"
-            ;
+    ss.codigo = label_teste + ":;\n"
+              + desbloquifica(bloco.codigo)
+              + expr.codigo + "  "
+              + condicao_var + " = !" + expr.valor + ";\n\n"
+              + "if ("+ condicao_var +") goto " + label_end + ";\n"
+              + "goto " + label_teste + ";\n"
+              + label_end + ":;\n"
+              ;
+  }else{
+    erro("Condicao nao permitida! O tipo ["
+         + traduz_interno_para_gueto(expr.tipo.tipo_base)
+         +"] nao e um tipo valido pro do while");
+  }
   return ss;
 }
 
@@ -1173,17 +1224,23 @@ Atributos gera_codigo_casos(Atributos expr,
 
 Atributos gera_codigo_switch(Atributos cond, Atributos bloco){
   Atributos ss;
-  compara_switch_var = gera_nome_var_temp("b");
-  string label_inutil = label_passthrough
-                      + (label_passthrough == "" ? "" : ":;\n");
-  ss.codigo = cond.codigo + bloco.codigo
-            + label_inutil + label_break + ":;\n";
-  label_break = gera_label("break");
-  label_passthrough = "";
+  if (aceita_tipo("switch", cond)){
+    string label_inutil = label_passthrough
+                        + (label_passthrough == "" ? "" : ":;\n");
+    ss.codigo = cond.codigo + bloco.codigo
+              + label_inutil + label_break + ":;\n";
+    label_break = gera_label("break");
+    label_passthrough = "";
+  }else{
+    erro("Condicao nao permitida! O tipo ["
+         + traduz_interno_para_gueto(cond.tipo.tipo_base)
+         +"] nao e um tipo valido pro do switch");
+  }
   return ss;
 }
 
 int main(int argc, char* argv[]){
   inicializa_operadores();
+  inicializa_verificacao_tipos();
   yyparse();
 }

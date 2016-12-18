@@ -22,18 +22,5 @@ mano {
   se(x == n){
     revela("Enquanto funciona, viado!");
   }
-
-  intero h = n;
-  fassa {
-    h = h-1;
-  } enquanto(h > 0);
-  revela("Do-while funciona, vadia!");
-
-  pra(intero i = 0; i < 10; i = i+1){}
-  se(i == 10){
-    revela("For funciona, biscate!");
-  }
-
   flwvlw 50+10+30;
 }
-
