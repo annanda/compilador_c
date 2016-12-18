@@ -37,9 +37,9 @@ string gera_nome_var_temp(string tipo_interno);
 string gera_nome_var_temp_sem_declarar(string tipo_interno);
 string atribuicao_var(Atributos s1, Atributos s3);
 string atribuicao_array(Atributos id, Atributos index, Atributos resultado);
-string gera_codigo_substring(Atributos id,
-                            Atributos indice,
-                            Atributos resultado);
+string gera_codigo_atribuicao_string(Atributos id,
+                                     Atributos indice,
+                                     Atributos resultado);
 string leitura_padrao(Atributos s3);
 string gera_label(string tipo);
 string desbloquifica(string lexema);
@@ -1004,7 +1004,7 @@ string atribuicao_var(Atributos s1, Atributos s3){
 string atribuicao_array(Atributos id, Atributos index, Atributos resultado){
   Tipo t_array(consulta_ts(id.valor).tipo_base);
   if(t_array.tipo_base == "s")
-    return gera_codigo_substring(id, index, resultado);
+    return gera_codigo_atribuicao_string(id, index, resultado);
 
   return index.codigo + resultado.codigo
             + testa_limites_array(id, index)
@@ -1012,9 +1012,9 @@ string atribuicao_array(Atributos id, Atributos index, Atributos resultado){
             + resultado.valor + ";\n";
 }
 
-string gera_codigo_substring(Atributos id,
-                            Atributos indice,
-                            Atributos resultado){
+string gera_codigo_atribuicao_string(Atributos id,
+                                     Atributos indice,
+                                     Atributos resultado){
   string codigo = indice.codigo + resultado.codigo;
 
   string label_teste = gera_label("teste_substring");
