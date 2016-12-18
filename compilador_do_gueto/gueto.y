@@ -63,6 +63,10 @@ Atributos gera_codigo_for(Atributos atrib,
 Atributos gera_codigo_casos(Atributos expr,
                             Atributos cmds, int tem_break);
 Atributos gera_codigo_switch(Atributos cond, Atributos bloco);
+Atributos atribuicao_var_global(Atributos tipo,
+                                Atributos id,
+                                string i,
+                                string j);
 
 map<string, Tipo> ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
@@ -164,24 +168,42 @@ S : DECLS MAIN
 
 MAIN  : TK_MAIN BLOCO
         {
-          $$.codigo = "int main()" + $2.codigo;
+          $$.codigo += "int main()" + $2.codigo;
         }
       |
       ;
 
 DECLS : DECLS DECL
-      |
+        {
+          $$.codigo += vars_globais[vars_globais.size()-1];
+          vars_globais.pop_back();
+          $$.codigo += $2.codigo;
+        }
+      | {
+          vars_globais.push_back("");
+        }
       ;
 
 DECL : GLOBAL_VAR ';' // Variaveis globais
      | FUNCAO
      ;
 
+
+
 // nao dava para usar o VAR pq ta declarando so coisa no bloco
-GLOBAL_VAR : TIPO VAR_DEFS
-           | TIPO NOME_VAR TK_ATRIB E
-           | TIPO NOME_VAR '[' TK_CINT ']'
-           | TIPO NOME_VAR '[' TK_CINT ']' '[' TK_CINT ']'
+GLOBAL_VAR : TIPO TK_ID
+             {
+               $$ =  atribuicao_var_global($1, $2, "", "");
+               $2.tipo = $1.tipo;
+             }
+           | TIPO TK_ID '[' TK_CINT ']'
+             {
+               $$ =  atribuicao_var_global($1, $2, $4.valor, "");
+             }
+           | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
+             {
+               $$ =  atribuicao_var_global($1, $2, $4.valor, $7.valor);
+             }
            ;
 
 // Permite tipo var1, var2, var3 e tipo var1 = expr;
@@ -1288,6 +1310,22 @@ Atributos gera_codigo_switch(Atributos cond, Atributos bloco){
          + traduz_interno_para_gueto(cond.tipo.tipo_base)
          +"] nao e um tipo valido pro do switch");
   }
+  return ss;
+}
+
+Atributos atribuicao_var_global(Atributos tipo, Atributos id,
+                                string i, string j){
+  Atributos ss = Atributos(id.valor, tipo.tipo);
+  if (i != ""){
+    ss = Atributos(id.valor, Tipo(tipo.tipo.tipo_base, toInt(i)));
+    if (j != ""){
+      ss = Atributos(id.valor, Tipo(tipo.tipo.tipo_base, toInt(i), toInt(j)));
+    }
+  }
+  vars_globais.push_back("");
+  vars_globais[vars_globais.size()-1] += declara_variavel(ss.valor, ss.tipo)
+                                      + ";\n";
+  insere_ts(ss.valor, ss.tipo);
   return ss;
 }
 
