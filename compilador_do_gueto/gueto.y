@@ -529,7 +529,17 @@ CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
               // TODO(jullytta): verificar os tipos dos parametros
               Tipo t_func = consulta_ts($1.valor);
               $$ = Atributos();
-              $$.codigo = $1.valor + "(" + $3.codigo + ");\n";
+              $$.tipo = t_func.retorno[0];
+
+              // Se a funcao nao e' void, entao existe um valor de retorno.
+              // Salvamos o mesmo na temporaria indicada por "retorno".
+              if($$.tipo.tipo_base != "v"){
+                string retorno = gera_nome_var_temp($$.tipo.tipo_base);
+                $$.valor = retorno;
+                $$.codigo += "  " + retorno + " = ";
+              }
+
+              $$.codigo += $1.valor + "(" + $3.codigo + ");\n";
             }
          ;
 
@@ -732,6 +742,7 @@ E : E '+' E
       $$ = $2;
     }
   | F
+  | CMD_CALL
   ;
 
 F : TK_ID

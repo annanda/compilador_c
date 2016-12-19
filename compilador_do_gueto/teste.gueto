@@ -27,7 +27,8 @@ mano {
   intero matris[2][2];
   matris[0][0] = 5;
 
-  multiplica(arrei, matris);
+  intero produto =  multiplica(arrei, matris);
+  revela("Produto da discordia = " + produto);
  
   flwvlw;
 }
