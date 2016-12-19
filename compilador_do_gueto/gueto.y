@@ -1328,6 +1328,8 @@ string atributoToString(Atributos s, string buff){
     codigo = "  sprintf(" + buff + ", \"%c\", " + s.valor + ");\n";
   }else if (s.tipo.tipo_base  == "d"){
     codigo = "  sprintf(" + buff + ", \"%f\", " + s.valor + ");\n";
+  }else if (s.tipo.tipo_base  == "s"){
+    codigo = "  sprintf(" + buff + ", \"%s\", " + s.valor + ");\n";
   }
   return codigo;
 }
