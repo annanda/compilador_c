@@ -311,7 +311,8 @@ NOME_VAR : TK_ID
            {
              // pro switch funcionar eu fiz isto!
              //compara_switch_var = gera_nome_var_temp("b");
-             //$$.codigo = declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
+             //$$.codigo = declara_variavel(compara_switch_var, Tipo("b"))
+             // + ";\n";
            }
          ;
 
@@ -1410,7 +1411,8 @@ string atributoToString(Atributos s, string buff){
     codigo = "  sprintf(" + buff + ", \"%c\", " + s.valor + ");\n";
   }else if (s.tipo.tipo_base  == "d"){
     codigo = "  sprintf(" + buff + ", \"%f\", " + s.valor + ");\n";
-  }else if (s.tipo.tipo_base  == "s"){ //sprintf desnecessario, mas deixa o codigo mais simples
+  }else if (s.tipo.tipo_base  == "s"){
+    //sprintf desnecessario, mas deixa o codigo mais simples
     codigo = "  sprintf(" + buff + ", \"%s\", " + s.valor + ");\n";
   }
   return codigo;
@@ -1752,5 +1754,6 @@ int main(int argc, char* argv[]){
   inicializa_operadores();
   inicializa_verificacao_tipos();
   cabecalhos_funcao = "";
+  vars_globais = "";
   yyparse();
 }
