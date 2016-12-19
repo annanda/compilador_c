@@ -771,9 +771,6 @@ void erro(string msg){
 }
 
 void inicializa_operadores() {
-  // TODO(jullytta): operacoes com char,
-  // concatenar int/double/char com string
-
   // Operador +
   tipo_opr["i+i"] = "i";
   tipo_opr["i+d"] = "d";
