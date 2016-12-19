@@ -1,0 +1,21 @@
+mano{
+  intero igual1[2];
+  intero igual2[2];
+  intero diferente[2];
+
+  pra (intero i = 0; i < 2; i = i + 1){
+    igual1[i] = i;
+    igual2[i] = i;
+    diferente[i] = 0;
+  }
+
+  se (igual1 == igual2){
+    revela("Os vetores igual1 == igual2!");
+    revela("\n");
+  }
+
+  se (igual1 <> diferente){
+    revela("Os vetores diferente <> igual1!");
+    revela("\n");
+  }
+}
