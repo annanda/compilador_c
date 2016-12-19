@@ -1,26 +1,25 @@
 
+/*
+nada imprime_mensage(cadea mensage){
+  revela(mensage);
+}
+*/
+
+intero var_global;
+
 mano {
 
-  cadea relou = "Oi";
-  cadea uoud = "mundo";
-  revela(relou + " " + uoud + "!");
+/*  imprime_mensage("Ai safada!"); */
 
-  revela("Fala que eu repito!");
-  cadea leituras;
-  descobre(leituras);
-  revela("Voce disse:");
-  revela(leituras);
+  intero a, b, soma;
+  
+  a = 10;
+  b = 3;
 
-  intero n;
-  revela("Entra com um numero agora vai:");
-  descobre(n);
+  soma = a + b;
 
-  intero x = 0;
-  enquanto (x < n){
-    x = x + 1;
-  }
-  se(x == n){
-    revela("Enquanto funciona, viado!");
-  }
-  flwvlw 50+10+30;
+  revela(soma);
+
+
+  flwvlw;
 }

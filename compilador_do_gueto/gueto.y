@@ -18,6 +18,8 @@ int yylex();
 
 void yyerror(const char* st);
 void erro(string msg);
+void empilha_ts();
+void desempilha_ts();
 void inicializa_operadores();
 void inicializa_verificacao_tipos();
 void insere_ts(string nome, Tipo tipo);
@@ -76,7 +78,8 @@ Atributos atribuicao_var_global(Atributos tipo,
                                 string j);
 Atributos gera_codigo_operador_in(Atributos var, Atributos vetor);
 
-map<string, Tipo> ts;
+// Pilha de tabelas de simbolos. Uma para cada escopo.
+vector< map<string, Tipo> > ts;
 // Pilha de variaveis (temporarias ou definidas pelo usuario)
 // que vao ser declaradas no inicio de cada bloco.
 vector<string> vars_bloco;
@@ -92,30 +95,40 @@ string label_passthrough = "";
 // Compara o valor do switch com o valor do case
 string compara_switch_var = gera_nome_var_temp_sem_declarar("b");
 
+enum TIPO { FUNCAO = -1, BASICO = 0, VETOR = 1, MATRIZ = 2 };
+
 struct Tipo {
   string tipo_base;
-  int ndim;
+  TIPO ndim;
   int tam[MAX_DIM];
+  vector<Tipo> retorno;
+  vector<Tipo> params;
 
   Tipo(){}
 
   // Cria variavel basica
   Tipo (string tipo){
     tipo_base = tipo;
-    ndim = 0;
+    ndim = BASICO;
   }
 
   Tipo (string tipo, int i){
     tipo_base = tipo;
-    ndim = 1;
+    ndim = VETOR;
     this->tam[0] = i;
   }
 
   Tipo (string tipo, int i, int j){
     tipo_base = tipo;
-    ndim = 2;
+    ndim = MATRIZ;
     this->tam[0] = i;
     this->tam[1] = j;
+  }
+
+  Tipo(Tipo retorno, vector<Tipo> params){
+    ndim = FUNCAO;
+    this->retorno.push_back(retorno);
+    this->params = params;
   }
 };
 
@@ -123,6 +136,7 @@ struct Atributos {
   string valor, codigo;
   Tipo tipo;
   vector<string> lista_str;
+  vector<Tipo> lista_tipo;
 
   Atributos(){}
 
@@ -167,17 +181,17 @@ string includes =
 
 %%
 
-S : DECLS MAIN
+S : { empilha_ts(); } DECLS MAIN
     {
       cout << includes << endl;
-      cout << $1.codigo << endl;
       cout << $2.codigo << endl;
+      cout << $3.codigo << endl;
     }
   ;
 
-MAIN  : TK_MAIN BLOCO
+MAIN  : TK_MAIN { empilha_ts(); } BLOCO
         {
-          $$.codigo += "int main()" + $2.codigo;
+          $$.codigo += "int main()" + $3.codigo;
         }
       |
       ;
@@ -837,6 +851,15 @@ void inicializa_operadores() {
 
 }
 
+void empilha_ts() {
+  map< string, Tipo > novo;
+  ts.push_back(novo);
+}
+
+void desempilha_ts() {
+  ts.pop_back();
+}
+
 void inicializa_verificacao_tipos(){
   //tipos aceitos pelo if
   tipo_expr["if"].push_back("b");
@@ -857,17 +880,20 @@ void inicializa_verificacao_tipos(){
 }
 
 void insere_ts(string nome, Tipo tipo){
-  if(ts.find(nome) != ts.end()){
+  if(ts[ts.size()-1].find(nome) != ts[ts.size()-1].end()){
     erro("Variavel ja declarada: " + nome);
   }
-  ts[nome] = tipo;
+  ts[ts.size()-1][nome] = tipo;
 }
 
 Tipo consulta_ts(string nome) {
-  if(ts.find(nome) == ts.end()){
-    erro("Variavel nao declarada: " + nome);
-  }
-  return ts[nome];
+  for(int i = ts.size()-1; i >= 0; i--)
+    if(ts[i].find(nome) != ts[i].end())
+      return ts[i][nome];
+
+  erro("Variavel nao declarada: " + nome);
+
+  return Tipo();
 }
 
 string toString(int n){
