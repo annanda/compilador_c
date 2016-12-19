@@ -1,8 +1,8 @@
 
 intero var_global;
 
-nada da_xabu(intero a[10]){
-  revela("Deu xabu!");
+intero multiplica(intero a[10], intero b[2][2]){
+  flwvlw a[0]*b[0][0];
 }
 
 nada imprime_mensage(intero discordia){
@@ -16,12 +16,17 @@ nada imprime_mensage(intero discordia){
 
 mano {
 
-  intero arrei[2];
+  intero arrei[10];
   arrei[0] = 2;
   arrei[1] = 3;
   intero const = 4;
 
   imprime_mensage(arrei[0]*arrei[1]-3+const);
 
+  intero matris[2][2];
+  matris[0][0] = 5;
+
+  multiplica(arrei, matris);
+ 
   flwvlw;
 }

@@ -446,6 +446,14 @@ PARAM : TIPO TK_ID
                          Tipo($1.tipo.tipo_base, toInt($4.valor)));
         }
       | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
+        {
+          $$ = Atributos($2.valor,
+                         Tipo($1.tipo.tipo_base,
+                              toInt($4.valor),
+                              toInt($7.valor)
+                         )
+                        );
+        }
       ;
 
 BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
