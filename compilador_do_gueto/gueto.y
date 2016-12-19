@@ -1855,9 +1855,7 @@ Atributos gera_codigo_operador_strings(Atributos s1,
 Atributos gera_operador_vetores(Atributos s1, string opr, Atributos s3){
   Atributos ss;
   string ret = gera_nome_var_temp("i");
-
   int tipo_tam = sizeof_tipo_interno(s1.tipo.tipo_base);
-
   int tam = (s1.tipo.ndim == 1
           ? s1.tipo.tam[0]
           : s1.tipo.tam[0]*s1.tipo.tam[1]);
@@ -1867,10 +1865,13 @@ Atributos gera_operador_vetores(Atributos s1, string opr, Atributos s3){
             + s3.valor + ", "
             + toString(tam*tipo_tam) +");\n"
             + "  " + ret + " = " + ret + " == 0;\n"
-            ;
-  if (opr == "!=") ss.codigo += "  " + ret + " = !" + ret + ";\n";
-  ss.valor = ret;
-  ss.tipo = Tipo("i");
+              ;
+    if (opr == "!=" ||
+        (s1.tipo != s3.tipo)){
+          ss.codigo += "  " + ret + " = !" + ret + ";\n";
+    }
+    ss.valor = ret;
+    ss.tipo = Tipo("i");
   return ss;
 }
 
