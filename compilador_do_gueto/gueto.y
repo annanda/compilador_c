@@ -1578,22 +1578,8 @@ Atributos gera_codigo_operador_strings(Atributos s1,
             + "  " + ret
             + " = strcmp("+ s1.valor + ", "
             + s3.valor + ");\n"
+            + "  " + ret + " = " + ret + " " + opr + " 0;\n";
             ;
-  if (opr == ">="){
-    string aux = gera_nome_var_temp("b");
-    ss.codigo += "  " + ret + " = " + ret + " == 0;\n"
-              +  "  " + aux + " = " + aux + " > 0;\n"
-              +  "  " + ret + " = " + aux + " || "+ ret +";\n"
-              ;
-  }else if(opr == "<="){
-    string aux = gera_nome_var_temp("b");
-    ss.codigo += "  " + ret + " = " + ret + " == 0;\n"
-              +  "  " + aux + " = " + aux + " < 0;\n"
-              +  "  " + ret + " = " + aux + " || "+ ret +";\n"
-              ;
-  }else{
-    ss.codigo += "  " + ret + " = " + ret + " " + opr + " 0;\n";
-  }
   ss.valor = ret;
   ss.tipo = Tipo("b");
   return ss;
