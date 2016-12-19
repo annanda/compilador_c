@@ -1,5 +1,6 @@
 
 intero var_global;
+daboul otra_var_global;
 
 intero multiplica(intero a[10], intero b[2][2]){
   flwvlw a[0]*b[0][0];
