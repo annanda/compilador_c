@@ -1,0 +1,39 @@
+mano{
+  cadea a = "Uma cadea bonita";
+  cadea b = "Uma cadea bonita";
+  cadea c = "Uma cadea feia";
+  cadea d = "Uma cadea bonitA";
+
+  se (a == b){
+    revela("Cadeas bonitas se comparam!");
+    revela("\n");
+  }
+
+  se (a <> c){
+    revela("Cadeas feias tambem se comparam!");
+    revela("\n");
+  }
+
+  se (a > d){
+    revela("Acho que tudo que e cadeia se compara!");
+    revela("\n");
+  }
+
+  se (a < d){
+    revela("Talvez nao da maneira anterior!");/*nao deve ser impresso*/
+    revela("\n");
+  }
+
+  se (a >= b){
+    revela("Cadeas amam se compararem!");
+    revela("\n");
+  }
+
+  se (a <= c){
+    revela("Algumas cadeas nem se comparam!");
+    revela("\n");
+  }senao{
+    revela("Outras sim"); /*nao deve ser impresso*/
+    revela("\n");
+  }
+}
