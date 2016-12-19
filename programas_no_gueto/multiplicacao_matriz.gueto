@@ -34,7 +34,8 @@ nada imprime (daboul m[3][2], intero l, intero c){
   pra (intero i = 0 ; i < l ; i = i + 1){
     revela("\n");
     pra (intero j = 0 ; j < c ; j = j + 1){
-      revela("\t" + m[i][j]);
+      revela("\t");
+      revela(m[i][j]);
     }
   }
   revela("\n");

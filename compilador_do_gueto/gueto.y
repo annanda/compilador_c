@@ -1414,7 +1414,9 @@ string testa_limites_array(Atributos id, Atributos indice){
   string codigo = "  " + var_teste_tam + " = " + indice.valor
                 + " < " + toString(tam) + ";\n"
                 + "  if (" + var_teste_tam + ") goto " + label_end + ";\n"
-                + "  printf(\"   Limite de arrei ultrapassado: %d < %d\", "
+                + "  cout << endl;"
+                + "  cout << endl;"
+                + "  printf(\"Limite de array ultrapassado: %d < %d\", "
                 + toString(tam-1) + ", " + indice.valor
                 + ");\n  cout << endl;\n"
                 + "  exit(1);\n"
@@ -1452,7 +1454,9 @@ string testa_limites_matriz(Atributos id,
                 + "  " + var_teste_tam + " = " + indice_temp
                 + " < " + toString(tam) + ";\n"
                 + "  if (" + var_teste_tam + ") goto " + label_end + ";\n"
-                + "  printf(\"   Limite de arrei ultrapassado."
+                + "  cout << endl;"
+                + "  cout << endl;"
+                + "  printf(\"Limite de array ultrapassado."
                 + " Maior indice esperado [%d][%d] e' menor que"
                 + " [%d][%d]\", "
                 + toString(t_matriz.tam[0]-1) + ", "
