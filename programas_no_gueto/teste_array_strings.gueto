@@ -5,7 +5,7 @@ mano {
   nomes[1][0] = "connie = ";
   nomes[2][0] = "stevonnie";
 
-  revela(nomes[0][0] + nomes[1][0] + nomes[2][0]);
+  revela(nomes[0][0] + nomes[1][0] + nomes[2][0] + "\n");
 
   flwvlw;
 }

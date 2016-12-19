@@ -1,12 +1,13 @@
 mano {
 
-  revela("/**********************************************/");
-  revela("/* Bem vindo ao nosso atendimento automatico. */");
-  revela("/* Para nao fazer nada, digite 0.             */");
-  revela("/* Para elogiar o nosso servico, digite 1.    */");
-  revela("/* Para reclamar de alguma coisa, digite 2.   */");
-  revela("/* Para desligar na nossa cara, digite 3.     */");
-  revela("/**********************************************/");
+  revela("/**********************************************/\n");
+  revela("/* Bem vindo ao nosso atendimento automatico. */\n");
+  revela("/* Para nao fazer nada, digite 0.             */\n");
+  revela("/* Para elogiar o nosso servico, digite 1.    */\n");
+  revela("/* Para reclamar de alguma coisa, digite 2.   */\n");
+  revela("/* Para desligar na nossa cara, digite 3.     */\n");
+  revela("/* Para desligar com educacao, digite 4.      */\n");
+  revela("/**********************************************/\n");
 
   intero comando;
   descobre(comando);
@@ -16,15 +17,15 @@ mano {
       cabou;
     essi 1:
     essi 2:
-      revela("Aguarde na linha para falar com um de nossos atendentes!");
+      revela("Aguarde na linha para falar com um de nossos atendentes!\n");
       cabou;
     essi 3:
-      revela("A gente responde grosseria com educacao.");
+      revela("A gente responde grosseria com educacao.\n");
     essi 4:
-      revela("Obrigado e tenha um bom dia!");
+      revela("Obrigado e tenha um bom dia!\n");
       cabou;
     padraum:
-      revela("Escolha invalida! Desligando...");
+      revela("Escolha invalida! Desligando...\n");
   }
 
   flwvlw;

@@ -12,7 +12,7 @@ mano {
 
   otro_arrei[2][1] = 3.5;
 
-  revela(arrei[arrei[0]*a+b]*otro_arrei[2][1]);
+  revela(arrei[arrei[0]*a+b]*otro_arrei[2][1] + "\n");
 
   flwvlw;
 }
