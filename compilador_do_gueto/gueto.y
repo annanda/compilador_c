@@ -143,6 +143,19 @@ struct Tipo {
     this->retorno.push_back(retorno);
     this->params = params;
   }
+
+  bool operator==(const Tipo& other) const{
+    if(this->tipo_base != other.tipo_base) return false;
+    if(this->ndim != other.ndim) return false;
+    for(int i = 0; i < this->ndim; i++){
+      if(this->tam[i] != other.tam[i]) return false;
+    }
+    return true;
+  }
+
+  bool operator!=(const Tipo &other) const{
+    return !(*this == other);
+  }
 };
 
 struct Atributos {
@@ -527,9 +540,27 @@ CMD_RETURN : TK_RETURN
 // Definindo a call de uma funcao
 CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
             {
-              // TODO(jullytta): verificar se essa sequer e' uma funcao
-              // TODO(jullytta): verificar os tipos dos parametros
               Tipo t_func = consulta_ts($1.valor);
+
+              // Verificacoes
+              if(t_func.ndim != FUNCAO)
+                erro($1.valor + " nao e' funcao!");
+              if(t_func.params.size() != $3.lista_tipo.size())
+                erro("Quantidade de argumentos invalida na chamada da funcao "
+                    + $1.valor + "; recebe " + toString(t_func.params.size())
+                    + " parametro(s)." );
+              for(int i = 0; i < t_func.params.size(); i++){
+                if(t_func.params[i] != $3.lista_tipo[i])
+                  erro("Parametro " + toString(i) + " na chamada da funcao "
+                      + $1.valor + " possui tipo incorreto.\n"
+                      + "Tipo esperado: "
+                      + traduz_interno_para_gueto(t_func.params[i].tipo_base)
+                      + ", dimensao: " + toString(t_func.params[i].ndim) + "\n"
+                      + "Tipo recebido: "
+                      + traduz_interno_para_gueto($3.lista_tipo[i].tipo_base)
+                      + ", dimensao: " + toString($3.lista_tipo[i].ndim));
+              }
+
               $$ = Atributos();
               $$.tipo = t_func.retorno[0];
 
