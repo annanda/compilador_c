@@ -1,62 +1,66 @@
-taipe intero[10, 10] vetor_10_por_10;
+intero semente;
 
-vetor_10_por_10 zeros() {
-  flwvlw {
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0}
-        };
+intero pzeudo_aleatorio(){
+  intero aux;
+  semente =  (8253729 * semente + 2396403);
+  aux =  (semente modis 32767 + 32767) modis 32767;
+  flwvlw aux;
 }
 
-/*função que define a multiplicação de matrizes A e B e retorna na matriz retorna*/
-nada multiplica_matriz(vetor_10_por_10 retorna, vetor_10_por_10 A, vetor_10_por_10 B){
-  vetor_10_por_10 K = zeros();
-  intero soma = 0;
-  pra (intero i = 0; i < 10; i++){
-    pra (intero j = 0; j < 10; j++){
-      pra (intero k = 0; k < 10; k++){
-        soma += A[i, k]*B[k, j];
+nada multiplica (daboul a[3][4],
+                 daboul b[4][2],
+                 intero lin_a,
+                 intero col_a,
+                 intero lin_b,
+                 intero col_b,
+                 daboul c[3][2]){
+
+  se (lin_b <> col_a){
+    revela("Matrizes incompativeis para multiplicacao\n");
+  }
+
+    pra (intero i = 0; i < lin_a; i = i + 1){
+      pra (intero j = 0; j < col_b ; j = j + 1){
+        revela(i);
+        c[i][j] = 0;
+        pra (intero k = 0; k < lin_b; k = k + 1){
+          c[i][j] = c[i][j] + a[i][k] * b[k][j];
+        }
       }
-      K[i, j] = soma;
-      soma = 0;
     }
-  }
-  retorna = K;
+
+
 }
 
-nada revela_matriz(vetor_10_por_10 X){
-  pra (intero i = 0; i < 10; i++){
-    pra (intero j = 0; j < 10; j++){
-      revela("\t" + X[i][j]);
-    }
+nada imprime (daboul m[3][2], intero l, intero c){
+  pra (intero i = 0 ; i < l ; i = i + 1){
     revela("\n");
+    pra (intero j = 0 ; j < c ; j = j + 1){
+      revela("\t" + m[i][j]);
+    }
   }
 }
 
-main {
-  vetor_10_por_10 A = {
-          {1,2,3,4,5,6,7,8,9,0},
-          {5,7,8,9,1,1,1,2,3,4},
-          {1,2,3,4,5,6,7,8,9,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {1,2,3,4,5,6,7,8,9,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {1,2,3,4,5,6,7,8,9,0},
-          {2,3,4,5,0,1,1,0,1,0},
-          {1,2,3,4,5,6,7,8,9,0},
-          {0,0,0,0,0,0,0,0,0,0},
-          {1,2,3,4,5,6,7,8,9,0}
-    };
-    vetor_10_por_10 Rt;
-    multiplica_matriz(Rt, A, A);
-    revela_matriz(Rt);
-    flwvlw;
+mano{
+  semente = 5323;
+  daboul a[3][4];
+  daboul b[4][2];
+  daboul c[3][2];
+
+  pra (intero i = 0; i < 3; i = i + 1){
+    pra (intero j = 0; j < 4; j = j + 1){
+      a[i][j] = (pzeudo_aleatorio() modis 10);
+    }
+  }
+
+  pra (intero k = 0; k < 4; k = k + 1){
+    pra (intero d = 0; d < 2; d = d + 1){
+      b[k][d] = (pzeudo_aleatorio() modis 10);
+    }
+  }
+
+  multiplica( a, b, 3, 4, 4, 2, c );
+  imprime( c, 3, 2 );
+  imprime( c, 3, 3 ); /* Deve dar erro de limites de array */
+  flwvlw;
 }

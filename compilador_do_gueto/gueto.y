@@ -62,6 +62,7 @@ string atributoToString(Atributos s, string buff);
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
 int aceita_tipo(string opr, Atributos expr);
+int is_declarada(string nome);
 
 Atributos acessa_array(Atributos id, Atributos indice);
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3);
@@ -499,7 +500,8 @@ CMD_REVELA : TK_WRITE '(' E ')'
              {
                $$.codigo = $3.codigo +
                      "  cout << " + $3.valor + ";\n"
-                     "  cout << endl;\n";
+                     //"  cout << endl;\n"
+                     ;
              }
            ;
 
@@ -597,11 +599,14 @@ CMD_FOR : TK_FOR '(' ATRIB_FOR ';' E ';' PULO_FOR ')' SUB_BLOCO
 ATRIB_FOR : TIPO TK_ID TK_ATRIB E
             {
               $$ = Atributos($2.valor, $1.tipo);
-              vars_bloco[vars_bloco.size()-1] += "  "
-                                              + declara_variavel($2.valor,
-                                                                 $1.tipo)
-                                              + ";\n";
-              insere_var_ts($2.valor, $1.tipo);
+              if (!is_declarada($2.valor)){
+                vars_bloco[vars_bloco.size()-1] += "  "
+                                                + declara_variavel($2.valor,
+                                                                   $1.tipo)
+                                                + ";\n";
+
+                insere_var_ts($2.valor, $1.tipo);
+              }
               $2.tipo = $1.tipo;
               $$.codigo = atribuicao_var($2, $4);
             }
@@ -1019,6 +1024,13 @@ Tipo consulta_ts(string nome) {
   return Tipo();
 }
 
+int is_declarada(string nome) {
+  for(int i = ts.size()-1; i >= 0; i--)
+    if(ts[i].find(nome) != ts[i].end())
+      return 1;
+  return 0;
+}
+
 string toString(int n){
   char buff[100];
 
@@ -1363,9 +1375,16 @@ string testa_limites_matriz(Atributos id,
 
   string var_teste_tam = gera_nome_var_temp("b");
   string label_end = gera_label("limite_array_ok");
+  static string indice_temp = gera_nome_var_temp("i");
   int tam = t_matriz.tam[0]*t_matriz.tam[1];
-  int indice = t_matriz.tam[1]*toInt(indice1.valor) + toInt(indice2.valor);
-  string codigo = "  " + var_teste_tam + " = " + toString(indice)
+
+  string indice = "  " + indice_temp + " = " + toString(t_matriz.tam[1])
+                + " * "+ indice1.valor + ";\n"
+                + "  " + indice_temp + " = " + indice_temp + " + "
+                + indice2.valor + ";\n";
+
+  string codigo = indice
+                + "  " + var_teste_tam + " = " + indice_temp
                 + " < " + toString(tam) + ";\n"
                 + "  if (" + var_teste_tam + ") goto " + label_end + ";\n"
                 + "  printf(\"Limite de arrei ultrapassado."
@@ -1379,7 +1398,6 @@ string testa_limites_matriz(Atributos id,
                 + "  exit(1);\n"
                 + label_end + ":;\n"
                 ;
-
   return codigo;
 }
 
