@@ -1322,8 +1322,7 @@ string testa_limites_array(Atributos id, Atributos indice){
 
   string var_teste_tam = gera_nome_var_temp("b");
   string label_end = gera_label("limite_array_ok");
-  Tipo t_matriz = consulta_ts(id.valor);
-  int tam = t_matriz.tam[0];
+  int tam = t_array.tam[0];
   string codigo = "  " + var_teste_tam + " = " + indice.valor
                 + " < " + toString(tam) + ";\n"
                 + "  if (" + var_teste_tam + ") goto " + label_end + ";\n"
@@ -1351,8 +1350,26 @@ string testa_limites_matriz(Atributos id,
   if(t_matriz.ndim != 2)
     erro("Variavel " + id.valor + " nao e' arrei de dimensao dois.");
 
-  // TODO(jullytta): codigo do teste dinamico retornado
-  return "";
+  string var_teste_tam = gera_nome_var_temp("b");
+  string label_end = gera_label("limite_array_ok");
+  int tam = t_matriz.tam[0]*t_matriz.tam[1];
+  int indice = t_matriz.tam[1]*toInt(indice1.valor) + toInt(indice2.valor);
+  string codigo = "  " + var_teste_tam + " = " + toString(indice)
+                + " < " + toString(tam) + ";\n"
+                + "  if (" + var_teste_tam + ") goto " + label_end + ";\n"
+                + "  printf(\"Limite de arrei ultrapassado."
+                + " Maior indice esperado [%d][%d] e' menor que"
+                + " [%d][%d]\", "
+                + toString(t_matriz.tam[0]-1) + ", "
+                + toString(t_matriz.tam[1]-1) + ", "
+                + indice1.valor + ", "
+                + indice2.valor
+                + ");\n  cout << endl;\n"
+                + "  exit(1);\n"
+                + label_end + ":;\n"
+                ;
+
+  return codigo;
 }
 
 int is_atribuivel(Atributos s1, Atributos s3){
