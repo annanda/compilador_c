@@ -20,6 +20,7 @@ mano {
   intero arrei[10];
   arrei[0] = 2;
   arrei[1] = 3;
+  arrei[2] = 4;
   intero const = 4;
 
   imprime_mensage(arrei[0]*arrei[1]-3+const);
@@ -27,7 +28,10 @@ mano {
   intero matris[2][2];
   matris[0][0] = 5;
 
-  multiplica(arrei, matris);
+  intero produto =  multiplica(arrei, matris);
+  revela("Produto da discordia = " + produto);
+
+  revela("Que loucura! Devo imprimir quatro: " + arrei[multiplica(arrei, matris)-8]);
  
   flwvlw;
 }
