@@ -17,8 +17,7 @@ nada multiplica (daboul a[3][4],
 
   se (lin_b <> col_a){
     revela("Matrizes incompativeis para multiplicacao\n");
-  }
-
+  }senao{
     pra (intero i = 0; i < lin_a; i = i + 1){
       pra (intero j = 0; j < col_b ; j = j + 1){
         c[i][j] = 0;
@@ -27,7 +26,7 @@ nada multiplica (daboul a[3][4],
         }
       }
     }
-
+  }
 
 }
 
