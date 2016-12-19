@@ -198,6 +198,9 @@ MAIN  : TK_MAIN { empilha_ts(); } BLOCO
 
 DECLS : DECLS DECL
         {
+          // TODO(jullytta): garantir que nao importa a ordem declarada,
+          // as variaveis globais sejam impressas antes dos cabecalhos das
+          // funcoes.
           $$.codigo += vars_globais[vars_globais.size()-1];
           vars_globais.pop_back();
           $$.codigo += $2.codigo;
@@ -208,7 +211,7 @@ DECLS : DECLS DECL
       ;
 
 DECL : GLOBAL_VAR ';' // Variaveis globais
-     | FUNCAO
+     | CABECALHO
      ;
 
 // nao dava para usar o VAR pq ta declarando so coisa no bloco
@@ -364,21 +367,51 @@ TIPO  : TK_INT
       // e.g., Vector, Struct
       ;
 
-FUNCAO : TIPO TK_ID '(' F_PARAMS ')' BLOCO
-       ;
+CABECALHO : TIPO TK_ID '(' F_PARAMS ')' ';'
+            {
+              $$ = Atributos($2.valor, Tipo($1.tipo, $4.lista_tipo));
+              $$.codigo = traduz_interno_para_C($1.tipo.tipo_base)
+                        + " " + $2.valor + "(";
+
+              for(int i = 0; i < $4.lista_tipo.size(); i++){
+                $$.codigo += declara_variavel($4.lista_str[i],
+                                              $4.lista_tipo[i]);
+                if(i != $4.lista_tipo.size()-1)
+                  $$.codigo += ", ";
+              }
+              $$.codigo += ");\n";
+            }
+          ;
 
 F_PARAMS : PARAMS
-         |
+         | { $$ = Atributos(); }
          ;
 
-PARAMS : PARAMS ',' PARAM
-       | PARAM
+PARAMS :  PARAM ',' PARAMS
+          {
+            $$.lista_str.push_back($1.valor);
+            $$.lista_str.insert($$.lista_str.end(),
+                                $3.lista_str.begin(),
+                                $3.lista_str.end());
+            $$.lista_tipo.push_back($1.tipo);
+            $$.lista_tipo.insert($$.lista_tipo.end(),
+                                $3.lista_tipo.begin(),
+                                $3.lista_tipo.end());
+          }
+       |  PARAM
+          {
+            $$.lista_str.push_back($1.valor);
+            $$.lista_tipo.push_back($1.tipo);
+          }
        ;
 
 PARAM : TIPO TK_ID
-      | TIPO TK_ID '[' E ']'
-      | TIPO TK_ID '[' ']'
-      // Provavelmente necessario para declarar intero a[]
+        {
+          $$.valor = $2.valor;
+          $$.tipo = $1.tipo;
+        }
+      | TIPO TK_ID '[' TK_CINT ']'
+      | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
       ;
 
 BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
@@ -387,7 +420,8 @@ BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
           // Adiciona as variaveis desse bloco ao inicio do mesmo e
           // desempilha a lista de variaveis desse bloco.
           $$.codigo += vars_bloco[vars_bloco.size()-1];
-          $$.codigo += "  "+ declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
+          $$.codigo += "  "
+                    + declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
           vars_bloco.pop_back();
           $$.codigo += $3.codigo + "}\n";
         }
