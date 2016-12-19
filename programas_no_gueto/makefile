@@ -15,4 +15,4 @@ src:
 	mkdir -p src/
 
 clean:
-	rm bin/${PROGRAM} src/${PROGRAM}.cc
+	rm -r bin/ src/
