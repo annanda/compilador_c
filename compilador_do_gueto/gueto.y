@@ -1321,10 +1321,21 @@ string testa_limites_array(Atributos id, Atributos indice){
   if(t_array.ndim != 1)
     erro("Variavel " + id.valor + " nao e' arrei de dimensao um.");
 
-  // TODO(jullytta): verificar se o limite do array foi ultrapassado
-  // Isso deve ser feito dinamicamente, temos que gerar codigo.
-  // Retornar esse codigo gerado.
-  return "";
+  string var_teste_tam = gera_nome_var_temp("b");
+  string label_end = gera_label("limite_array_ok");
+  Tipo t_matriz = consulta_ts(id.valor);
+  int tam = t_matriz.tam[0];
+  string codigo = "  " + var_teste_tam + " = " + indice.valor
+                + " < " + toString(tam) + ";\n"
+                + "  if (" + var_teste_tam + ") goto " + label_end + ";\n"
+                + "  printf(\"Limite de arrei ultrapassado: %d < %d\", "
+                + toString(tam-1) + ", " + indice.valor
+                + ");\n  cout << endl;\n"
+                + "  exit(1);\n"
+                + label_end + ":;\n"
+                ;
+
+  return codigo;
 }
 
 string testa_limites_matriz(Atributos id,
@@ -1752,5 +1763,6 @@ int main(int argc, char* argv[]){
   inicializa_operadores();
   inicializa_verificacao_tipos();
   cabecalhos_funcao = "";
+  vars_globais = "";
   yyparse();
 }
