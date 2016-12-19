@@ -96,6 +96,8 @@ vector<string> vars_bloco;
 map<string, string> tipo_opr;
 // declara variaveis  globais
 vector<string> vars_globais;
+// declara as funcoes
+string cabecalhos_funcao;
 // faz a verificacao de tipos
 map< string, vector<string> > tipo_expr;
 // label de break do switch
@@ -194,6 +196,7 @@ S : { empilha_ts(); } DECLS MAIN
     {
       cout << includes << endl;
       cout << $2.codigo << endl;
+      cout << cabecalhos_funcao << endl;
       cout << $3.codigo << endl;
     }
   ;
@@ -208,8 +211,7 @@ MAIN  : TK_MAIN { empilha_ts(); } BLOCO
 DECLS : DECLS DECL
         {
           // TODO(jullytta): garantir que nao importa a ordem declarada,
-          // as variaveis globais sejam impressas antes dos cabecalhos das
-          // funcoes.
+          // as variaveis globais sejam impressas antes das funcoes.
           $$.codigo += vars_globais[vars_globais.size()-1];
           vars_globais.pop_back();
           $$.codigo += $2.codigo;
@@ -220,7 +222,7 @@ DECLS : DECLS DECL
       ;
 
 DECL : GLOBAL_VAR ';' // Variaveis globais
-     | CABECALHO
+     | FUNC
      ;
 
 // nao dava para usar o VAR pq ta declarando so coisa no bloco
@@ -376,18 +378,17 @@ TIPO  : TK_INT
       // e.g., Vector, Struct
       ;
 
-CABECALHO : TIPO TK_ID '(' F_PARAMS ')' ';'
-            {
-              $$ = Atributos($2.valor, Tipo($1.tipo, $4.lista_tipo));
-              $$.codigo += gera_cabecalho_funcao($1.tipo,
-                                                 $2.valor,
-                                                 $4.lista_str,
-                                                 $4.lista_tipo);
-              $$.codigo += ";\n";
-
-              insere_ts($2.valor, Tipo($1.tipo, $4.lista_tipo));
-            }
-          ;
+FUNC :  TIPO TK_ID '(' F_PARAMS ')' BLOCO
+        {
+          $$ = Atributos($2.valor, Tipo($1.tipo, $4.lista_tipo));
+          string cabecalho = gera_cabecalho_funcao($1.tipo,
+                                                   $2.valor,
+                                                   $4.lista_str,
+                                                   $4.lista_tipo);
+          cabecalhos_funcao += cabecalho + ";\n";
+          insere_ts($2.valor, Tipo($1.tipo, $4.lista_tipo));
+        }
+     ;
 
 F_PARAMS : PARAMS
          | { $$ = Atributos(); }
@@ -1687,5 +1688,6 @@ Atributos gera_operador_vetores(Atributos s1, string opr, Atributos s3){
 int main(int argc, char* argv[]){
   inicializa_operadores();
   inicializa_verificacao_tipos();
+  cabecalhos_funcao = "";
   yyparse();
 }
