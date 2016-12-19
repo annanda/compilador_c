@@ -1,11 +1,14 @@
 
-nada imprime_mensage(cadea mensage){
-/*  revela(mensage); */
+nada imprime_mensage(intero discordia){
+  se(discordia > 10){
+    revela("Vadia da discordia!");
+  }
+  senao {
+    /*imprime_mensage(discordia+1);*/
+  }
 }
 
 mano {
-
-/*  imprime_mensage("Ai safada!"); */
 
   intero a, b, soma;
   

@@ -394,11 +394,23 @@ FUNC :  TIPO TK_ID { empilha_ts(); } '(' F_PARAMS ')'
 
           $$.codigo = cabecalho + $8.codigo;
 
+          desempilha_ts();
         }
      ;
 
-F_PARAMS : PARAMS
-         | { $$ = Atributos(); }
+F_PARAMS :  PARAMS
+            {
+              $$ = $1;
+              $$.codigo = "";
+              // Insere parametros na tabela de simbolos da funcao
+              for(int i = 0; i < $1.lista_str.size(); i++){
+                $$.codigo += "  " + declara_variavel($1.lista_str[i],
+                                                     $1.lista_tipo[i])
+                          + ";\n";
+                insere_var_ts($1.lista_str[i], $1.lista_tipo[i]);
+              }
+            }
+         |  { $$ = Atributos(); }
          ;
 
 PARAMS :  PARAM ',' PARAMS
