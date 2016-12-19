@@ -105,7 +105,7 @@ map< string, vector<string> > tipo_expr;
 string label_break = gera_label("break");
 string label_passthrough = "";
 // Compara o valor do switch com o valor do case
-string compara_switch_var = gera_nome_var_temp_sem_declarar("b");
+string compara_switch_var = "t_switch";
 
 enum TIPO { FUNCAO = -1, BASICO = 0, VETOR = 1, MATRIZ = 2 };
 
@@ -460,8 +460,6 @@ BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
           // Adiciona as variaveis desse bloco ao inicio do mesmo e
           // desempilha a lista de variaveis desse bloco.
           $$.codigo += vars_bloco[vars_bloco.size()-1];
-          $$.codigo += "  "
-                    + declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
           vars_bloco.pop_back();
           $$.codigo += $3.codigo + "}\n";
         }
@@ -1754,6 +1752,6 @@ int main(int argc, char* argv[]){
   inicializa_operadores();
   inicializa_verificacao_tipos();
   cabecalhos_funcao = "";
-  vars_globais = "";
+  vars_globais = declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
   yyparse();
 }
