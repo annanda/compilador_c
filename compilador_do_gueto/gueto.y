@@ -1406,7 +1406,7 @@ string testa_limites_matriz(Atributos id,
 
   string var_teste_tam = gera_nome_var_temp("b");
   string label_end = gera_label("limite_array_ok");
-  static string indice_temp = gera_nome_var_temp("i");
+  string indice_temp = gera_nome_var_temp("i");
   int tam = t_matriz.tam[0]*t_matriz.tam[1];
 
   string indice = "  " + indice_temp + " = " + toString(t_matriz.tam[1])
