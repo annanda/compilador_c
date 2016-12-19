@@ -1,0 +1,32 @@
+mano {
+
+  intero i_1[2];
+  intero i_2[2];
+  intero i_3[3];
+  daboul d_1[2];
+
+  /* Inicializa todos os vetores com 1 */
+  pra(intero i = 0; i < 2; i = i + 1){
+    i_1[i] = 1;
+    i_2[i] = 1;
+    i_3[i] = 1;
+    d_1[i] = 1;
+  }
+  i_3[2] = 1;
+
+  /* Agora vamos comparar i_1 com todos os outros vetores */
+  /* Note que ele deve ser igual somente ao vetor i_2     */
+  se(i_1 == i_2){
+    revela("i_1 e' igual a i_2\n");
+  }
+
+  se(i_1 <> i_3){
+    revela("i_1 e' diferente de i_3\n");
+  }
+
+  se(i_1 <> d_1){
+    revela("i_1 e' diferente de d_1\n");
+  }  
+
+  flwvlw;
+}
