@@ -1865,9 +1865,11 @@ Atributos gera_operador_vetores(Atributos s1, string opr, Atributos s3){
             + s3.valor + ", "
             + toString(tam*tipo_tam) +");\n"
             + "  " + ret + " = " + ret + " == 0;\n"
-              ;
-    if (opr == "!=" ||
-        (s1.tipo != s3.tipo)){
+            ;
+    if(s1.tipo != s3.tipo){
+        ss.codigo = s1.codigo + s3.codigo + "  " + ret + " = 0;\n";
+    }
+    if (opr == "!="){
           ss.codigo += "  " + ret + " = !" + ret + ";\n";
     }
     ss.valor = ret;
