@@ -881,6 +881,9 @@ void inicializa_operadores() {
   tipo_opr["i+d"] = "d";
   tipo_opr["d+i"] = "d";
   tipo_opr["d+d"] = "d";
+  tipo_opr["c+c"] = "c";
+  tipo_opr["c+i"] = "c";
+  tipo_opr["i+c"] = "c";
   tipo_opr["s+s"] = "s";
   tipo_opr["s+i"] = "s";
   tipo_opr["i+s"] = "s";
@@ -894,6 +897,9 @@ void inicializa_operadores() {
   tipo_opr["i-d"] = "d";
   tipo_opr["d-i"] = "d";
   tipo_opr["d-d"] = "d";
+  tipo_opr["c-c"] = "c";
+  tipo_opr["c-i"] = "c";
+  tipo_opr["i-c"] = "c";
 
   // Operador *
   tipo_opr["i*i"] = "i";

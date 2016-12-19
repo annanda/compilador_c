@@ -1,0 +1,22 @@
+mano {
+
+  revela("Imprimindo as 5 primeiras letras do alfabeto com while: ");
+
+  xar c = 'a';
+  enquanto(c < 'f'){
+    revela(c);
+    c = c + 1;
+  }
+  revela("\n");
+
+  revela("Agora imprimindo as 5 ultimas usando do-while: ");
+
+  c = 'z';
+  fassa {
+    revela(c);
+    c = c - 1;
+  } enquanto(c > 'u');
+  revela("\n");
+
+  flwvlw;
+}
