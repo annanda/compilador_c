@@ -37,6 +37,10 @@ string traduz_operador_C_para_gueto(string opr_c);
 string renomeia_variavel_usuario(string nome);
 string gera_nome_var_temp(string tipo_interno);
 string gera_nome_var_temp_sem_declarar(string tipo_interno);
+string gera_cabecalho_funcao(Tipo retorno,
+                             string funcao,
+                             vector<string> params,
+                             vector<Tipo> tipos);
 string atribuicao_var(Atributos s1, Atributos s3);
 string atribuicao_array(Atributos id,
                         Atributos indice,
@@ -375,16 +379,13 @@ TIPO  : TK_INT
 CABECALHO : TIPO TK_ID '(' F_PARAMS ')' ';'
             {
               $$ = Atributos($2.valor, Tipo($1.tipo, $4.lista_tipo));
-              $$.codigo = traduz_interno_para_C($1.tipo.tipo_base)
-                        + " " + $2.valor + "(";
+              $$.codigo += gera_cabecalho_funcao($1.tipo,
+                                                 $2.valor,
+                                                 $4.lista_str,
+                                                 $4.lista_tipo);
+              $$.codigo += ";\n";
 
-              for(int i = 0; i < $4.lista_tipo.size(); i++){
-                $$.codigo += declara_variavel($4.lista_str[i],
-                                              $4.lista_tipo[i]);
-                if(i != $4.lista_tipo.size()-1)
-                  $$.codigo += ", ";
-              }
-              $$.codigo += ");\n";
+              insere_ts($2.valor, Tipo($1.tipo, $4.lista_tipo));
             }
           ;
 
@@ -1059,6 +1060,22 @@ string gera_nome_var_temp_sem_declarar(string tipo_interno){
   static int n = 1;
   string nome = "t" + tipo_interno + "_" + toString(n++);
   return nome;
+}
+
+string gera_cabecalho_funcao(Tipo retorno,
+                             string funcao,
+                             vector<string> params,
+                             vector<Tipo> tipos){
+  string codigo = traduz_interno_para_C(retorno.tipo_base)
+                + " " + funcao + "(";
+
+  for(int i = 0; i < tipos.size(); i++){
+    codigo += declara_variavel(params[i], tipos[i]);
+    if(i != tipos.size()-1)
+      codigo += ", ";
+  }
+  codigo += ")";
+  return codigo;
 }
 
 string atribuicao_var(Atributos s1, Atributos s3){
