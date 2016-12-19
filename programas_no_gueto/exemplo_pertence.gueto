@@ -1,0 +1,14 @@
+mano{
+  intero festa[5];
+
+  pra (intero i = 0; i < 5; i = i + 1){
+    festa[i] = (i * i + i) modis 5;
+  }
+
+  se (0 em festa){
+    revela("Hoje tem festa no gueto!");
+    revela("\n");
+  }
+
+  flwvlw;
+}
