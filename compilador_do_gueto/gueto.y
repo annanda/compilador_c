@@ -52,6 +52,7 @@ string testa_limites_array(Atributos id, Atributos indice);
 string testa_limites_matriz(Atributos id,
                             Atributos indice1,
                             Atributos indice2);
+string atributoToString(Atributos s, string buff);
 
 int is_atribuivel(Atributos s1, Atributos s3);
 int toInt(string valor);
@@ -779,6 +780,12 @@ void inicializa_operadores() {
   tipo_opr["d+i"] = "d";
   tipo_opr["d+d"] = "d";
   tipo_opr["s+s"] = "s";
+  tipo_opr["s+i"] = "s";
+  tipo_opr["i+s"] = "s";
+  tipo_opr["s+d"] = "s";
+  tipo_opr["d+s"] = "s";
+  tipo_opr["s+c"] = "s";
+  tipo_opr["c+s"] = "s";
 
   // Operador -
   tipo_opr["i-i"] = "i";
@@ -799,8 +806,6 @@ void inicializa_operadores() {
   tipo_opr["d/i"] = "d";
   tipo_opr["d/d"] = "d";
 
-  // TODO(jullytta): comparacao de strings
-  // Operadores: <>, ==, >, <, <=, >=
   // Operador >
   tipo_opr["i>i"] = "b";
   tipo_opr["i>d"] = "b";
@@ -1278,7 +1283,6 @@ int toInt(string valor) {
 
 int aceita_tipo(string opr, Atributos expr){
   if (tipo_expr.count(opr)){
-    // TODO(JOHN): melhorar isso pq esse for parece ser bem ineficiente
     for(int a = 0; a < tipo_expr[opr].size(); a++)
       if (tipo_expr[opr].at(a) == expr.tipo.tipo_base){
         return 1;
@@ -1319,6 +1323,18 @@ Atributos acessa_array(Atributos id, Atributos indice){
   return ss;
 }
 
+string atributoToString(Atributos s, string buff){
+  string codigo;
+  if (s.tipo.tipo_base == "i"){
+    codigo = "  sprintf(" + buff + ", \"%d\", " + s.valor + ");\n";
+  }else if (s.tipo.tipo_base  == "c"){
+    codigo = "  sprintf(" + buff + ", \"%c\", " + s.valor + ");\n";
+  }else if (s.tipo.tipo_base  == "d"){
+    codigo = "  sprintf(" + buff + ", \"%f\", " + s.valor + ");\n";
+  }
+  return codigo;
+}
+
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   Atributos ss;
 
@@ -1352,13 +1368,23 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   ss.codigo = s1.codigo + s3.codigo;
 
   // Strings
-  // TODO(jullytta):  concatenar string
-  // com int, char e double.
   if(tipo_resultado == "s" && opr == "+"){
-    ss.codigo += "  strncpy(" + ss.valor + ", " + s1.valor + ", "
-              + toString(MAX_STRING_SIZE) + ");\n"
-              + "  strncat(" + ss.valor + ", " + s3.valor + ", "
-              + toString(MAX_STRING_SIZE) + ");\n";
+    string buff = gera_nome_var_temp("s");
+    // concatena strings com tudo menos boolean
+    if (s1.tipo.tipo_base == "s"){
+      ss.codigo += atributoToString(s3, buff);
+      ss.codigo += "  strncpy(" + ss.valor + ", " + s1.valor + ", "
+                + toString(MAX_STRING_SIZE) + ");\n"
+                + "  strncat(" + ss.valor + ", " + buff + ", "
+                + toString(MAX_STRING_SIZE) + ");\n";
+    }else if (s3.tipo.tipo_base == "s"){
+      ss.codigo += atributoToString(s1, buff);
+      ss.codigo += "  strncpy(" + ss.valor + ", " + buff + ", "
+                + toString(MAX_STRING_SIZE) + ");\n"
+                + "  strncat(" + ss.valor + ", " + s3.valor + ", "
+                + toString(MAX_STRING_SIZE) + ");\n";
+    }
+
   }
   // Tipo basico
   else {
