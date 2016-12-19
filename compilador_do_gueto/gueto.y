@@ -96,7 +96,7 @@ vector<string> vars_bloco;
 // Faz o mapeamento dos tipos dos operadores
 map<string, string> tipo_opr;
 // declara variaveis  globais
-vector<string> vars_globais;
+string vars_globais;
 // declara as funcoes
 string cabecalhos_funcao;
 // faz a verificacao de tipos
@@ -196,7 +196,7 @@ string includes =
 S : { empilha_ts(); } DECLS MAIN
     {
       cout << includes << endl;
-      cout << $2.valor << endl;
+      cout << vars_globais << endl;
       cout << cabecalhos_funcao << endl;
       cout << $2.codigo << endl;
       cout << $3.codigo << endl;
@@ -215,15 +215,12 @@ DECLS : DECLS DECL
           $$ = Atributos();
           // Gambiarra para garantir que as variaveis globais
           // sejam impressas antes das funcoes.
-          $$.valor = vars_globais[vars_globais.size()-1];
           // TODO(jullytta): descobrir por que a linha abaixo
           // causa seg fault.
-          /*vars_globais.pop_back();*/
           $$.codigo = $1.codigo + "\n" + $2.codigo;
         }
       | {
           $$ = Atributos();
-          vars_globais.push_back("");
         }
       ;
 
@@ -1655,11 +1652,10 @@ Atributos atribuicao_var_global(Atributos tipo, Atributos id,
       ss = Atributos(id.valor, Tipo(tipo.tipo.tipo_base, toInt(i), toInt(j)));
     }
   }
-  vars_globais.push_back("");
-  vars_globais[vars_globais.size()-1] += declara_variavel(ss.valor, ss.tipo)
+  vars_globais += declara_variavel(ss.valor, ss.tipo)
                                       + ";\n";
   insere_var_ts(ss.valor, ss.tipo);
-  ss.codigo = id.codigo;
+  //ss.codigo = id.codigo;
   return ss;
 }
 
