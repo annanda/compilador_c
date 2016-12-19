@@ -511,21 +511,45 @@ CMD_RETURN : TK_RETURN
            ;
 
 // Definindo a call de uma funcao
-CMD_CALL : TK_ID '(' CALL_PARAMS ')'
-// Chama uma funcao, precisa verificar se foi definida!
+CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
+            {
+              // TODO(jullytta): verificar os tipos dos parametros
+              Tipo t_func = consulta_ts($1.valor);
+              $$ = Atributos();
+              $$.codigo = $1.valor + "(" + $3.codigo + ");\n";
+            }
          ;
 
 CALL_PARAMS : C_PARAMS
-            |
+              {
+                $$ = $1;
+                $$.codigo = "";
+                for(int i = 0; i < $1.lista_str.size(); i++){
+                  $$.codigo += $1.lista_str[i];
+                  if(i != $1.lista_str.size()-1)
+                    $$.codigo += ", ";
+                }
+              }
+            | { $$ = Atributos(); }
             ;
 
-C_PARAMS : C_PARAMS ',' C_PARAM
-         | C_PARAM
+C_PARAMS :  E ',' C_PARAMS
+            {
+              $$.lista_str.push_back($1.valor);
+              $$.lista_str.insert($$.lista_str.end(),
+                                  $3.lista_str.begin(),
+                                  $3.lista_str.end());
+              $$.lista_tipo.push_back($1.tipo);
+              $$.lista_tipo.insert($$.lista_tipo.end(),
+                                  $3.lista_tipo.begin(),
+                                  $3.lista_tipo.end());
+            }
+         |  E
+            {
+              $$.lista_str.push_back($1.valor);
+              $$.lista_tipo.push_back($1.tipo);
+            }
          ;
-
-C_PARAM : TK_ID
-        | TK_ID '[' E ']'
-        ;
 
 CMD_IF : TK_IF '(' E ')' SUB_BLOCO
          {

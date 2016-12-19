@@ -4,21 +4,17 @@ nada imprime_mensage(intero discordia){
     revela("Vadia da discordia!");
   }
   senao {
-    /*imprime_mensage(discordia+1);*/
+    imprime_mensage(discordia+1);
   }
 }
 
 mano {
 
-  intero a, b, soma;
-  
-  a = 10;
+  intero a, b;
+  a = 2;
   b = 3;
 
-  soma = a + b;
-
-  revela(soma);
-
+  imprime_mensage(a*b-3);
 
   flwvlw;
 }
