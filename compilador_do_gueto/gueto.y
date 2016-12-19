@@ -107,6 +107,8 @@ string label_break = gera_label("break");
 string label_passthrough = "";
 // Compara o valor do switch com o valor do case
 string compara_switch_var = "t_switch";
+// Guarda o retorno de uma funcao caso seja do tipo string
+string retorno_string_var = "t_retorno_string";
 
 enum TIPO { FUNCAO = -1, BASICO = 0, VETOR = 1, MATRIZ = 2 };
 
@@ -533,7 +535,15 @@ CMD_RETURN : TK_RETURN
              }
            | TK_RETURN E
              {
-               $$.codigo = $1.codigo + $2.codigo + "  return "+ $2.valor +";\n";
+               $$.codigo = $1.codigo + $2.codigo;
+               if($2.tipo.tipo_base != "s"){
+                 $$.codigo += "  return "+ $2.valor +";\n";
+               }
+               else {
+                 $$.codigo += "  strncpy(" + retorno_string_var + ", "
+                           + $2.valor + ", " + toString(MAX_STRING_SIZE)
+                           + ");\n";
+               }
              }
            ;
 
@@ -567,10 +577,13 @@ CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
 
               // Se a funcao nao e' void, entao existe um valor de retorno.
               // Salvamos o mesmo na temporaria indicada por "retorno".
+              string retorno = "";
               if($$.tipo.tipo_base != "v"){
-                string retorno = gera_nome_var_temp($$.tipo.tipo_base);
+                retorno = gera_nome_var_temp($$.tipo.tipo_base);
                 $$.valor = retorno;
-                $$.codigo += "  " + retorno + " = ";
+                $$.codigo += "  ";
+                if($$.tipo.tipo_base != "s")
+                  $$.codigo += retorno + " = ";
               }
 
               $$.codigo += $1.valor + "(";
@@ -580,6 +593,13 @@ CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
                   $$.codigo += ", ";
               }
               $$.codigo += ");\n";
+
+              if($$.tipo.tipo_base == "s"){
+                $$.codigo += "  strncpy(" + retorno + ", "
+                          + retorno_string_var + ", "
+                          + toString(MAX_STRING_SIZE)
+                          + ");\n";
+              }
             }
          ;
 
@@ -835,8 +855,10 @@ F : TK_ID
     }
   | TK_CSTRING
     {
-      $$ = Atributos($1.valor, Tipo("s"));
-      $$.codigo = $1.codigo;
+      string v = gera_nome_var_temp("s");
+      $$ = Atributos(v, Tipo("s"));
+      $$.codigo = "  strncpy(" + v + ", " + $1.valor + ", "
+                + toString(MAX_STRING_SIZE) + ");\n";
     }
   | BOOL
   ;
@@ -1190,8 +1212,14 @@ string gera_cabecalho_funcao(Tipo retorno,
                              string funcao,
                              vector<string> params,
                              vector<Tipo> tipos){
-  string codigo = traduz_interno_para_C(retorno.tipo_base)
-                + " " + funcao + "(";
+  string codigo = "";
+  if(retorno.ndim != 0)
+    erro("Retorno de funcao so pode ser de dimensao 0!");
+  if(retorno.tipo_base == "s")
+    codigo += "void";
+  else
+    codigo += traduz_interno_para_C(retorno.tipo_base);
+  codigo += " " + funcao + "(";
 
   for(int i = 0; i < tipos.size(); i++){
     codigo += declara_variavel(params[i], tipos[i]);
@@ -1846,6 +1874,7 @@ int main(int argc, char* argv[]){
   inicializa_operadores();
   inicializa_verificacao_tipos();
   cabecalhos_funcao = "";
-  vars_globais = declara_variavel(compara_switch_var, Tipo("b")) + ";\n";
+  vars_globais = declara_variavel(compara_switch_var, Tipo("b")) + ";\n"
+               + declara_variavel(retorno_string_var, Tipo("s")) + ";\n";
   yyparse();
 }
