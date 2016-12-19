@@ -196,7 +196,7 @@ string includes =
 S : { empilha_ts(); } DECLS MAIN
     {
       cout << includes << endl;
-      // TODO(jullytta): variaveis globais precisam entrar aqui!
+      cout << $2.valor << endl;
       cout << cabecalhos_funcao << endl;
       cout << $2.codigo << endl;
       cout << $3.codigo << endl;
@@ -212,13 +212,17 @@ MAIN  : TK_MAIN { empilha_ts(); } BLOCO
 
 DECLS : DECLS DECL
         {
-          // TODO(jullytta): garantir que nao importa a ordem declarada,
-          // as variaveis globais sejam impressas antes das funcoes.
-          $$.codigo += vars_globais[vars_globais.size()-1];
-          vars_globais.pop_back();
-          $$.codigo += $2.codigo;
+          $$ = Atributos();
+          // Gambiarra para garantir que as variaveis globais
+          // sejam impressas antes das funcoes.
+          $$.valor = vars_globais[vars_globais.size()-1];
+          // TODO(jullytta): descobrir por que a linha abaixo
+          // causa seg fault.
+          /*vars_globais.pop_back();*/
+          $$.codigo = $1.codigo + "\n" + $2.codigo;
         }
       | {
+          $$ = Atributos();
           vars_globais.push_back("");
         }
       ;
@@ -437,6 +441,10 @@ PARAM : TIPO TK_ID
           $$.tipo = $1.tipo;
         }
       | TIPO TK_ID '[' TK_CINT ']'
+        {
+          $$ = Atributos($2.valor,
+                         Tipo($1.tipo.tipo_base, toInt($4.valor)));
+        }
       | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
       ;
 
@@ -513,6 +521,7 @@ CMD_RETURN : TK_RETURN
 // Definindo a call de uma funcao
 CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
             {
+              // TODO(jullytta): verificar se essa sequer e' uma funcao
               // TODO(jullytta): verificar os tipos dos parametros
               Tipo t_func = consulta_ts($1.valor);
               $$ = Atributos();
