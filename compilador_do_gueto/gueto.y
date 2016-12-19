@@ -718,6 +718,7 @@ BOOL : TK_TRUE
 %%
 
 int nlinha = 1;
+int nColuna = 0;
 
 #include "lex.yy.c"
 
@@ -725,12 +726,12 @@ int yyparse();
 
 void yyerror(const char* st){
   puts( st );
-  printf( "Linha: %d, [%s]\n", nlinha, yytext );
+  printf( "Linha: %d, Coluna: %d [%s]\n", nlinha, nColuna-1, yytext );
 }
 
 void erro(string msg){
   cerr << "Erro: " << msg << endl;
-  fprintf(stderr, "Linha: %d, [%s]\n", nlinha, yytext );
+  fprintf(stderr, "Linha: %d, Coluna: %d [%s]\n", nlinha, nColuna-1, yytext );
   exit(1);
 }
 
