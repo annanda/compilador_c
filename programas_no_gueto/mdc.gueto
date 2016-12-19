@@ -1,0 +1,26 @@
+intero mdc(intero a, intero b){
+  se(b == 0){
+    flwvlw a;
+  }
+  senao {
+    flwvlw mdc(b, a modis b);
+  }
+}
+
+mano{
+  intero a, b;
+
+  revela("Programa MDC\n");
+  revela("Digite o primeiro numero:\n");
+  descobre(a);
+  revela("Digite o segundo numero:\n");
+  descobre(b);
+
+  intero m = mdc(a, b);
+  revela(m);
+  revela("\n");
+
+  revela("O MDC entre " + a + " e " + b + " é: " + mdc(a, b) + "\n");
+
+  flwvlw;
+}

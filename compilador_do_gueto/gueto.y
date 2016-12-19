@@ -563,6 +563,7 @@ CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
 
               $$ = Atributos();
               $$.tipo = t_func.retorno[0];
+              $$.codigo += $3.codigo;
 
               // Se a funcao nao e' void, entao existe um valor de retorno.
               // Salvamos o mesmo na temporaria indicada por "retorno".
@@ -572,25 +573,23 @@ CMD_CALL :  TK_ID '(' CALL_PARAMS ')'
                 $$.codigo += "  " + retorno + " = ";
               }
 
-              $$.codigo += $1.valor + "(" + $3.codigo + ");\n";
+              $$.codigo += $1.valor + "(";
+              for(int i = 0; i < $3.lista_str.size(); i++){
+                $$.codigo += $3.lista_str[i];
+                if(i != $3.lista_str.size()-1)
+                  $$.codigo += ", ";
+              }
+              $$.codigo += ");\n";
             }
          ;
 
 CALL_PARAMS : C_PARAMS
-              {
-                $$ = $1;
-                $$.codigo = "";
-                for(int i = 0; i < $1.lista_str.size(); i++){
-                  $$.codigo += $1.lista_str[i];
-                  if(i != $1.lista_str.size()-1)
-                    $$.codigo += ", ";
-                }
-              }
             | { $$ = Atributos(); }
             ;
 
 C_PARAMS :  E ',' C_PARAMS
             {
+              $$.codigo = $1.codigo + $3.codigo;
               $$.lista_str.push_back($1.valor);
               $$.lista_str.insert($$.lista_str.end(),
                                   $3.lista_str.begin(),
@@ -602,6 +601,7 @@ C_PARAMS :  E ',' C_PARAMS
             }
          |  E
             {
+              $$.codigo = $1.codigo;
               $$.lista_str.push_back($1.valor);
               $$.lista_tipo.push_back($1.tipo);
             }
