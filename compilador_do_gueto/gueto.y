@@ -22,7 +22,8 @@ void empilha_ts();
 void desempilha_ts();
 void inicializa_operadores();
 void inicializa_verificacao_tipos();
-void insere_ts(string nome, Tipo tipo);
+void insere_var_ts(string nome, Tipo tipo);
+void insere_func_ts(string nome, Tipo tipo);
 
 Tipo consulta_ts(string nome);
 
@@ -195,8 +196,9 @@ string includes =
 S : { empilha_ts(); } DECLS MAIN
     {
       cout << includes << endl;
-      cout << $2.codigo << endl;
+      // TODO(jullytta): variaveis globais precisam entrar aqui!
       cout << cabecalhos_funcao << endl;
+      cout << $2.codigo << endl;
       cout << $3.codigo << endl;
     }
   ;
@@ -257,7 +259,7 @@ VAR : TIPO VAR_DEFS
           vars_bloco[vars_bloco.size()-1] += "  "
                                           + (declara_variavel(*it, $1.tipo))
                                           + ";\n";
-          insere_ts(*it, $1.tipo);
+          insere_var_ts(*it, $1.tipo);
         }
       }
     | TIPO NOME_VAR TK_ATRIB E
@@ -266,7 +268,7 @@ VAR : TIPO VAR_DEFS
         vars_bloco[vars_bloco.size()-1] += "  "
                                         + declara_variavel($2.valor, $1.tipo)
                                         + ";\n";
-        insere_ts($2.valor, $1.tipo);
+        insere_var_ts($2.valor, $1.tipo);
         $2.tipo = $1.tipo;
         $$.codigo = atribuicao_var($2, $4);
       }
@@ -276,7 +278,7 @@ VAR : TIPO VAR_DEFS
         vars_bloco[vars_bloco.size()-1] += "  "
                                         + declara_variavel($$.valor, $$.tipo)
                                         + ";\n";
-        insere_ts($$.valor, $$.tipo);
+        insere_var_ts($$.valor, $$.tipo);
       }
     | TIPO NOME_VAR '[' TK_CINT ']' '[' TK_CINT ']'
       {
@@ -286,7 +288,7 @@ VAR : TIPO VAR_DEFS
         vars_bloco[vars_bloco.size()-1] += "  "
                                         + declara_variavel($$.valor, $$.tipo)
                                         + ";\n";
-        insere_ts($$.valor, $$.tipo);
+        insere_var_ts($$.valor, $$.tipo);
       }
     ;
 
@@ -378,15 +380,20 @@ TIPO  : TK_INT
       // e.g., Vector, Struct
       ;
 
-FUNC :  TIPO TK_ID '(' F_PARAMS ')' BLOCO
+FUNC :  TIPO TK_ID { empilha_ts(); } '(' F_PARAMS ')'
+        // Necessario inserir a funcao na tabela de simbolos antes
+        // do bloco para que funcoes possam ser recursivas.
+        { insere_func_ts($2.valor, Tipo($1.tipo, $5.lista_tipo)); } BLOCO
         {
-          $$ = Atributos($2.valor, Tipo($1.tipo, $4.lista_tipo));
+          $$ = Atributos($2.valor, Tipo($1.tipo, $5.lista_tipo));
           string cabecalho = gera_cabecalho_funcao($1.tipo,
                                                    $2.valor,
-                                                   $4.lista_str,
-                                                   $4.lista_tipo);
+                                                   $5.lista_str,
+                                                   $5.lista_tipo);
           cabecalhos_funcao += cabecalho + ";\n";
-          insere_ts($2.valor, Tipo($1.tipo, $4.lista_tipo));
+
+          $$.codigo = cabecalho + $8.codigo;
+
         }
      ;
 
@@ -535,7 +542,7 @@ ATRIB_FOR : TIPO TK_ID TK_ATRIB E
                                               + declara_variavel($2.valor,
                                                                  $1.tipo)
                                               + ";\n";
-              insere_ts($2.valor, $1.tipo);
+              insere_var_ts($2.valor, $1.tipo);
               $2.tipo = $1.tipo;
               $$.codigo = atribuicao_var($2, $4);
             }
@@ -928,11 +935,18 @@ void inicializa_verificacao_tipos(){
 
 }
 
-void insere_ts(string nome, Tipo tipo){
+void insere_var_ts(string nome, Tipo tipo){
   if(ts[ts.size()-1].find(nome) != ts[ts.size()-1].end()){
     erro("Variavel ja declarada: " + nome);
   }
   ts[ts.size()-1][nome] = tipo;
+}
+
+void insere_func_ts(string nome, Tipo tipo){
+  if(ts[ts.size()-2].find(nome) != ts[ts.size()-2].end()){
+    erro("Funcao ja declarada: " + nome);
+  }
+  ts[ts.size()-2][nome] = tipo;
 }
 
 Tipo consulta_ts(string nome) {
@@ -1599,7 +1613,7 @@ Atributos atribuicao_var_global(Atributos tipo, Atributos id,
   vars_globais.push_back("");
   vars_globais[vars_globais.size()-1] += declara_variavel(ss.valor, ss.tipo)
                                       + ";\n";
-  insere_ts(ss.valor, ss.tipo);
+  insere_var_ts(ss.valor, ss.tipo);
   ss.codigo = id.codigo;
   return ss;
 }

@@ -1,6 +1,4 @@
 
-intero var_global;
-
 nada imprime_mensage(cadea mensage){
 /*  revela(mensage); */
 }
