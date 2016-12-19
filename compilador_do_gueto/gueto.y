@@ -77,6 +77,10 @@ Atributos atribuicao_var_global(Atributos tipo,
                                 string i,
                                 string j);
 Atributos gera_codigo_operador_in(Atributos var, Atributos vetor);
+Atributos gera_operador_vetores(Atributos s1, string opr, Atributos s3);
+Atributos gera_codigo_operador_strings(Atributos s1,
+                                       string opr,
+                                       Atributos s3);
 
 // Pilha de tabelas de simbolos. Uma para cada escopo.
 vector< map<string, Tipo> > ts;
@@ -748,6 +752,7 @@ BOOL : TK_TRUE
 %%
 
 int nlinha = 1;
+int nColuna = 0;
 
 #include "lex.yy.c"
 
@@ -755,12 +760,12 @@ int yyparse();
 
 void yyerror(const char* st){
   puts( st );
-  printf( "Linha: %d, [%s]\n", nlinha, yytext );
+  printf( "Linha: %d, Coluna: %d [%s]\n", nlinha, nColuna-1, yytext );
 }
 
 void erro(string msg){
   cerr << "Erro: " << msg << endl;
-  fprintf(stderr, "Linha: %d, [%s]\n", nlinha, yytext );
+  fprintf(stderr, "Linha: %d, Coluna: %d [%s]\n", nlinha, nColuna-1, yytext );
   exit(1);
 }
 
@@ -804,6 +809,7 @@ void inicializa_operadores() {
   tipo_opr["c>c"] = "b";
   tipo_opr["i>c"] = "b";
   tipo_opr["c>i"] = "b";
+  tipo_opr["s>s"] = "b";
 
   // Operador <
   tipo_opr["i<i"] = "b";
@@ -813,6 +819,7 @@ void inicializa_operadores() {
   tipo_opr["c<c"] = "b";
   tipo_opr["i<c"] = "b";
   tipo_opr["c<i"] = "b";
+  tipo_opr["s<s"] = "b";
 
   // Operador >=
   tipo_opr["i>=i"] = "b";
@@ -822,6 +829,7 @@ void inicializa_operadores() {
   tipo_opr["c>=c"] = "b";
   tipo_opr["i>=c"] = "b";
   tipo_opr["c>=i"] = "b";
+  tipo_opr["s>=s"] = "b";
 
   // Operador <=
   tipo_opr["i<=i"] = "b";
@@ -831,6 +839,7 @@ void inicializa_operadores() {
   tipo_opr["c<=c"] = "b";
   tipo_opr["i<=c"] = "b";
   tipo_opr["c<=i"] = "b";
+  tipo_opr["s<=s"] = "b";
 
   // Operador ==
   tipo_opr["i==i"] = "b";
@@ -840,6 +849,7 @@ void inicializa_operadores() {
   tipo_opr["c==c"] = "b";
   tipo_opr["i==c"] = "b";
   tipo_opr["c==i"] = "b";
+  tipo_opr["s==s"] = "b";
 
   // Operador <>
   tipo_opr["i!=i"] = "b";
@@ -849,6 +859,7 @@ void inicializa_operadores() {
   tipo_opr["c!=c"] = "b";
   tipo_opr["i!=c"] = "b";
   tipo_opr["c!=i"] = "b";
+  tipo_opr["s!=s"] = "b";
 
   // Operador =
   tipo_opr["i=i"] = "i";
@@ -1276,6 +1287,24 @@ int aceita_tipo(string opr, Atributos expr){
   return 0;
 }
 
+int sizeof_tipo_interno(string tipo_interno){
+  int tipo_tam;
+  if (tipo_interno == "i"){
+    tipo_tam = sizeof(int);
+  }else if (tipo_interno == "c"){
+    tipo_tam = sizeof(char);
+  }else if (tipo_interno == "s"){
+    tipo_tam = sizeof(string);
+  }else if (tipo_interno == "d"){
+    tipo_tam = sizeof(double);
+  }else if (tipo_interno == "b"){
+    tipo_tam = sizeof(int);
+  }else{
+    tipo_tam = sizeof(int);
+  }
+  return tipo_tam;
+}
+
 Atributos acessa_array(Atributos id, Atributos indice){
   Atributos ss;
 
@@ -1290,7 +1319,6 @@ Atributos acessa_array(Atributos id, Atributos indice){
   return ss;
 }
 
-// TODO(jullytta): Operacoes com vetores
 Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
   Atributos ss;
 
@@ -1304,12 +1332,27 @@ Atributos gera_codigo_operador(Atributos s1, string opr, Atributos s3){
        + " " + traduz_operador_C_para_gueto(opr) + " "
        + traduz_interno_para_gueto(tipo3));
 
+  // operacoes com arreis
+  if (s1.tipo.ndim > 0 && s3.tipo.ndim > 0){
+    if (opr == "==" || opr == "!="){
+      ss = gera_operador_vetores(s1, opr, s3);
+      return ss;
+    }
+  }
+
+ // operacoes com strings
+  if (s1.tipo.tipo_base == "s"
+      && s3.tipo.tipo_base == "s"
+      && tipo_resultado == "b"){
+    return gera_codigo_operador_strings(s1, opr, s3);
+  }
+
   ss.valor = gera_nome_var_temp(tipo_resultado);
   ss.tipo = Tipo(tipo_resultado);
   ss.codigo = s1.codigo + s3.codigo;
 
   // Strings
-  // TODO(jullytta): comparacao de strings, concatenar string
+  // TODO(jullytta):  concatenar string
   // com int, char e double.
   if(tipo_resultado == "s" && opr == "+"){
     ss.codigo += "  strncpy(" + ss.valor + ", " + s1.valor + ", "
@@ -1558,6 +1601,44 @@ Atributos gera_codigo_operador_in(Atributos var, Atributos vetor){
          traduz_interno_para_gueto(vetor.tipo.tipo_base)
          +"] para o operador 'em'");
   }
+  return ss;
+}
+
+Atributos gera_codigo_operador_strings(Atributos s1,
+                                       string opr,
+                                       Atributos s3){
+  Atributos ss;
+  string ret = gera_nome_var_temp("b");
+  ss.codigo = s1.codigo + s3.codigo
+            + "  " + ret
+            + " = strcmp("+ s1.valor + ", "
+            + s3.valor + ");\n"
+            + "  " + ret + " = " + ret + " " + opr + " 0;\n";
+            ;
+  ss.valor = ret;
+  ss.tipo = Tipo("b");
+  return ss;
+}
+
+Atributos gera_operador_vetores(Atributos s1, string opr, Atributos s3){
+  Atributos ss;
+  string ret = gera_nome_var_temp("i");
+
+  int tipo_tam = sizeof_tipo_interno(s1.tipo.tipo_base);
+
+  int tam = (s1.tipo.ndim == 1
+          ? s1.tipo.tam[0]
+          : s1.tipo.tam[0]*s1.tipo.tam[1]);
+  ss.codigo = s1.codigo + s3.codigo
+            + "  " + ret
+            + " = memcmp("+ s1.valor + ", "
+            + s3.valor + ", "
+            + toString(tam*tipo_tam) +");\n"
+            + "  " + ret + " = " + ret + " == 0;\n"
+            ;
+  if (opr == "!=") ss.codigo += "  " + ret + " = !" + ret + ";\n";
+  ss.valor = ret;
+  ss.tipo = Tipo("i");
   return ss;
 }
 
