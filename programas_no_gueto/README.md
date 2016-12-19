@@ -11,3 +11,6 @@ make PROGRAM="programa" run
 make PROGRAM="programa" clean
 ```
 Por default, o programa compilado/executado é `relou_mundo`.
+
+# Problemas conhecidos
+* As dependências do executável estão mal definidas. Por isso, ele não detecta quando alterações foram feitas no código e precisamos recompilar. A solução é, por enquanto, sempre rodar `clean` antes de recompilar. O makefile será consertado quando os requisitos do trabalho estiverem preenchidos (prioridades).
