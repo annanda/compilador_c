@@ -9,18 +9,21 @@ cadea formata(cadea a, cadea b) {
 
 mano {
    cadea nomes[2];
+   cadea buffer;
 
    revela("Digite o seu nome: ");
-   descobre(nomes[0]);
+   descobre(buffer);
+   nomes[0] = buffer;
 
    revela("Digite o seu sobrenome: ");
-   descobre(nomes[1]);
+   descobre(buffer);
+   nomes[1] = buffer;
 
-   revela("");
+   revela("\n");
 
-   revela("Bom dia, " + formata(nomes[0], nomes[1]));
-   revela("Bom dia, " + formata(" " + nomes[0], nomes[1]));
-   revela("Bom dia, " + formata(nomes[0], " " + nomes[1]));
+   revela("Bom dia, " + formata(nomes[0], nomes[1]) + "\n");
+   revela("Bom dia, " + formata(" " + nomes[0], nomes[1]) + "\n");
+   revela("Bom dia, " + formata(nomes[0], " " + nomes[1]) + "\n");
 
    flwvlw;
 }
