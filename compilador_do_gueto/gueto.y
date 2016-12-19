@@ -1328,7 +1328,7 @@ string atributoToString(Atributos s, string buff){
     codigo = "  sprintf(" + buff + ", \"%c\", " + s.valor + ");\n";
   }else if (s.tipo.tipo_base  == "d"){
     codigo = "  sprintf(" + buff + ", \"%f\", " + s.valor + ");\n";
-  }else if (s.tipo.tipo_base  == "s"){
+  }else if (s.tipo.tipo_base  == "s"){ //sprintf desnecessario, mas deixa o codigo mais simples
     codigo = "  sprintf(" + buff + ", \"%s\", " + s.valor + ");\n";
   }
   return codigo;
