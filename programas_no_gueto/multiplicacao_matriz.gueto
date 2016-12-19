@@ -21,7 +21,6 @@ nada multiplica (daboul a[3][4],
 
     pra (intero i = 0; i < lin_a; i = i + 1){
       pra (intero j = 0; j < col_b ; j = j + 1){
-        revela(i);
         c[i][j] = 0;
         pra (intero k = 0; k < lin_b; k = k + 1){
           c[i][j] = c[i][j] + a[i][k] * b[k][j];
@@ -39,6 +38,7 @@ nada imprime (daboul m[3][2], intero l, intero c){
       revela("\t" + m[i][j]);
     }
   }
+  revela("\n");
 }
 
 mano{
