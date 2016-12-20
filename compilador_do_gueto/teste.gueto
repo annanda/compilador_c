@@ -1,37 +1,19 @@
 
-intero var_global;
-daboul otra_var_global;
-
-intero multiplica(intero a[10], intero b[2][2]){
-  flwvlw a[0]*b[0][0];
-}
-
-nada imprime_mensage(intero discordia){
-  se(discordia > 10){
-    revela("Vadia da discordia!");
-  }
-  senao {
-    imprime_mensage(discordia+1);
-  }
+intero foo(intero por_valor, intero &por_referencia){
+  por_referencia = 0;
+  flwvlw por_valor * por_referencia;
 }
 
 mano {
+  intero a, b, c;
 
-  intero arrei[10];
-  arrei[0] = 2;
-  arrei[1] = 3;
-  arrei[2] = 4;
-  intero const = 4;
+  a = 1;
+  b = 2;
+  c = foo(a, b);
 
-  imprime_mensage(arrei[0]*arrei[1]-3+const);
-
-  intero matris[2][2];
-  matris[0][0] = 5;
-
-  intero produto =  multiplica(arrei, matris);
-  revela("Produto da discordia = " + produto);
-
-  revela("Que loucura! Devo imprimir quatro: " + arrei[multiplica(arrei, matris)-8]);
+  revela("a = " + a + "\n");
+  revela("b = " + b + "\n");
+  revela("c = " + c + "\n");
  
   flwvlw;
 }
