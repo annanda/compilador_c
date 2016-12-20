@@ -198,7 +198,7 @@ string includes =
 %token TK_E TK_AND TK_OR TK_NOT
 %token TK_FOR TK_WHILE TK_DO
 %token TK_SWITCH TK_CASE TK_BREAK TK_DEFAULT
-%token TK_IN
+%token TK_IN TK_REF
 
 %left TK_OR
 %left TK_AND
@@ -449,26 +449,30 @@ PARAMS :  PARAM ',' PARAMS
           }
        ;
 
-PARAM : TIPO TK_ID
+PARAM : TIPO REF TK_ID
         {
-          $$.valor = $2.valor;
+          $$.valor = $3.valor;
           $$.tipo = $1.tipo;
         }
-      | TIPO TK_ID '[' TK_CINT ']'
+      | TIPO REF TK_ID '[' TK_CINT ']'
         {
-          $$ = Atributos($2.valor,
-                         Tipo($1.tipo.tipo_base, toInt($4.valor)));
+          $$ = Atributos($3.valor,
+                         Tipo($1.tipo.tipo_base, toInt($5.valor)));
         }
-      | TIPO TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
+      | TIPO REF TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
         {
-          $$ = Atributos($2.valor,
+          $$ = Atributos($3.valor,
                          Tipo($1.tipo.tipo_base,
-                              toInt($4.valor),
-                              toInt($7.valor)
+                              toInt($5.valor),
+                              toInt($8.valor)
                          )
                         );
         }
       ;
+
+REF : TK_REF
+    |
+    ;
 
 BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
         {

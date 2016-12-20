@@ -51,6 +51,7 @@ void count(int c);
 "padraum"  { count(1); yylval = Atributos(yytext); return TK_DEFAULT;}
 "em"       { count(1); yylval = Atributos(yytext); return TK_IN;     }
 
+"&"       { count(1); yylval = Atributos(yytext); return TK_REF; }
 "="       { count(1); yylval = Atributos(yytext); return TK_ATRIB; }
 "<="      { count(1); yylval = Atributos(yytext); return TK_LE;    }
 ">="      { count(1); yylval = Atributos(yytext); return TK_GE;    }
