@@ -1,5 +1,6 @@
 
 intero foo(intero por_valor, intero &por_referencia){
+  por_valor = 0;
   por_referencia = 0;
   flwvlw por_valor * por_referencia;
 }
@@ -11,6 +12,7 @@ mano {
   b = 2;
   c = foo(a, b);
 
+  revela("a deve ser 1, b e c devem ser 0\n");
   revela("a = " + a + "\n");
   revela("b = " + b + "\n");
   revela("c = " + c + "\n");

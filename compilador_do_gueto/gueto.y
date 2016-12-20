@@ -425,6 +425,8 @@ F_PARAMS :  PARAMS
                 $$.codigo += "  " + declara_variavel($1.lista_str[i],
                                                      $1.lista_tipo[i])
                           + ";\n";
+                if($1.lista_str[i][0] == '&')
+                  $1.lista_str[i].erase(0, 1);
                 insere_var_ts($1.lista_str[i], $1.lista_tipo[i]);
               }
             }
@@ -451,17 +453,17 @@ PARAMS :  PARAM ',' PARAMS
 
 PARAM : TIPO REF TK_ID
         {
-          $$.valor = $3.valor;
+          $$.valor = $2.valor + $3.valor;
           $$.tipo = $1.tipo;
         }
       | TIPO REF TK_ID '[' TK_CINT ']'
         {
-          $$ = Atributos($3.valor,
+          $$ = Atributos($2.valor + $3.valor,
                          Tipo($1.tipo.tipo_base, toInt($5.valor)));
         }
       | TIPO REF TK_ID '[' TK_CINT ']' '[' TK_CINT ']'
         {
-          $$ = Atributos($3.valor,
+          $$ = Atributos($2.valor + $3.valor,
                          Tipo($1.tipo.tipo_base,
                               toInt($5.valor),
                               toInt($8.valor)
@@ -471,7 +473,7 @@ PARAM : TIPO REF TK_ID
       ;
 
 REF : TK_REF
-    |
+    | { $$ = Atributos(); }
     ;
 
 BLOCO : TK_BEGIN { vars_bloco.push_back(""); } CMDS TK_END
