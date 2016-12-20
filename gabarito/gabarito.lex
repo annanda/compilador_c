@@ -19,7 +19,7 @@ STR     (\"[^"]*\")
 {CIN}      { return TK_CIN; }
 {COUT}     { return TK_COUT; }
 {INCLUDE}  { return TK_INCLUDE; }
-{STR}	   { return TK_STR; }	
+{STR}	   { return TK_STR; }
 "using namespace std" { return TK_NAMESPACE; }
 "endl"     { return TK_ENDL; }
 "main"     { return TK_MAIN; }
@@ -46,7 +46,3 @@ STR     (\"[^"]*\")
 .          { return *yytext; }
 
 %%
-
- 
-
-
